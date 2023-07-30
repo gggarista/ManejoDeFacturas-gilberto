@@ -58,31 +58,32 @@ const postLogiun: any = async () => {
 
 </script>
 <template>
-    <section class=" min-h-screen flex items-center justify-center ">
-        <div class=" p-5 flex rounded-2xl shadow-lg max-w-3xl ">
-            <div class="md:w-1/2 px-5">
-                <h2 class="text-2xl font-bold text-[#002D74]">Login</h2>
+    <section class="flex items-center justify-center min-h-screen ">
+        <div class="flex max-w-3xl p-5 shadow-lg rounded-2xl">
+            <div class="px-5 md:w-1/2">
+                <h2 class="text-2xl font-bold text-[#002D74] text-center">CONSULTAR FACTURAS</h2>
+                <h2 class="block w-full px-4 py-3 mt-6 font-semibold text-center text-white bg-blue-500 rounded-lg hover:bg-blue-400 focus:bg-blue-400">ENTRADA AL SISTEMA</h2>
                 <form class="mt-6" >
                     <div>
                         <label class="block text-gray-700">Correo Electronico</label>
                         <input v-model="model.email" type="email" name="" 
-                            class="w-full px-4 py-3 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none"
+                            class="w-full px-4 py-3 mt-2 bg-gray-900 border rounded-lg focus:border-blue-500 focus:bg-white focus:outline-none"
                             autofocus required>
                     </div>
                     <div class="mt-4">
                         <label class="block text-gray-700">Contraseña</label>
                         <input v-model="model.pass" type="password" name=""  minlength="6"
-                            class="w-full px-4 py-3 rounded-lg bg-gray-200 mt-2 border focus:border-blue-500 focus:bg-white focus:outline-none"
+                            class="w-full px-4 py-3 mt-2 bg-gray-900 border rounded-lg focus:border-blue-500 focus:bg-white focus:outline-none"
                             required>
                     </div>
                     <button @click.prevent="postLogiun" type="submit"
-                        class="w-full block bg-blue-500 hover:bg-blue-400 focus:bg-blue-400 text-white font-semibold rounded-lg px-4 py-3 mt-6">
+                        class="block w-full px-4 py-3 mt-6 font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-400 focus:bg-blue-400">
                         Entrar
                     </button>
                 </form>
             </div>
             <div class="w-1/2 md:block lg:flex ">
-                <img :src="logo" class="rounded-2xl self-center" alt="page img">
+                <img :src="logo" class="self-center rounded-2xl" alt="page img">
             </div>
         </div>
     </section>

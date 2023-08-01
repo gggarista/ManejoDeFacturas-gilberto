@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Ref, ref, onMounted, computed, watch } from "vue";
-import VueTailwindDatepicker from 'vue-tailwind-datepicker'
+//import VueTailwindDatepicker from 'vue-tailwind-datepicker'
 import calendarIon from '../assets/calendar.svg'
 import FilePdfIon from '../assets/pdf-svgrepo-com.svg'
 import FileXmlIon from '../assets/xml-svgrepo-com.svg'
-import FileZipIon from '../assets/zip-svgrepo-com.svg'
+//import FileZipIon from '../assets/zip-svgrepo-com.svg'
 import sendMailIon from '../assets/send-mail-svgrepo-com.svg'
 import SendInvoiceIon from '../assets/send-svgrepo-com.svg'
 import moment from "moment";
@@ -12,6 +12,7 @@ import useLoginStore from '@/stores/loginStore'
 import axios from "axios";
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
+import { AES, enc } from 'crypto-js';
 const apiUrl: string = import.meta.env.VITE_API_URL;
 axios.defaults.baseURL = apiUrl;
 const token: string | null = localStorage.getItem('token')
@@ -29,14 +30,12 @@ const dateValue: Ref<{ startDate: String, endDate: String }> = ref({
     endDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
 })
 const OpcionesPaginas: any = ref([])
-const paginaSelected: Ref<String> = ref('')
+const paginaSelected: Ref<String> = ref('1')
 const itemPerPageSelected: Ref<String> = ref('10')
-const firstPageLogin: Ref<any> = ref(localStorage.getItem('firstPageLogin'))
-
 const varitemPerPage: Ref<Array<String>> = ref(["5", "10", "25", "50", "100", "1000"])
-const varSelectedStatusDocument: Ref<String> = ref("ACEPTADA")
-const varStatusSendInvoice: Ref<boolean> = ref(false)
-
+const varSelectedStatusDocument: Ref<String> = ref("")
+const secretKey: Ref<any> = ref('arista') // Cambia esto por tu clave secreta
+const firstPageLogin: Ref<any> = ref('')
 
 //---------- variables computed---------------------
 
@@ -76,7 +75,7 @@ const filterDocumentCliente: any = computed(() => {
             const searchTerm = varBuscadorCliente.value?.toLowerCase();
             if (item.client && item.client != '') {
 
-                const clienteMatches = (item.client) ? JSON.parse(item.client).name.toLowerCase().includes(searchTerm) : '';
+                const clienteMatches = (JSON.parse(item.client).name) ? JSON.parse(item.client).name.toLowerCase().includes(searchTerm) : '';
                 const clienteNumberMatches = item.customer.toLowerCase().includes(searchTerm);
                 return clienteMatches || clienteNumberMatches;
             } else {
@@ -157,16 +156,37 @@ const GenerateOpcionDePaginas: any = (url: any = '') => {
 }
 const getDataLogin: any = async (urlPAginate: any = null) => {
     try {
-        var dataL: any = localStorage.getItem('user')
+        const bytes = AES.decrypt(localStorage.getItem('user'), secretKey.value);
+        var dataL: any = bytes.toString(enc.Utf8);
         var model = JSON.parse(dataL)
         let { data } = await axios.post(`${urlPAginate}&itemPerPage=${itemPerPageSelected.value}&aceptada=${varSelectedStatusDocument.value}&created_start=${dateValue.value.startDate}&created_end=${dateValue.value.endDate}&cliente=${varBuscadorCliente.value}&prefijo=${varBuscadorPrefix.value}&documento=${varBuscadorNormal.value}`, { email: model.email, password: model.password })
+
+        // Paso 1: Ordenar el array por fecha de forma descendente
+        data[0].sort((a: any, b: any) => b.created_at - a.created_at);
+        // Paso 2 y 3: Crear un nuevo array y eliminar duplicados por fecha
+        const objetosUnicos: any = [];
+        const fechasVistas = new Set();
+        data[0].forEach((objeto: any) => {
+            const fecha = objeto.number;
+            if (!fechasVistas.has(fecha)) {
+                objetosUnicos.push(objeto);
+                fechasVistas.add(fecha);
+            }
+        });
+        data[0] = objetosUnicos;
+
+        for (const iterator of data[0]) {
+            iterator.isSend = false
+        }
         DataDocument.value = data[0]
         pagination.value = data[1]
-        localStorage.setItem("token", data.user.api_token)
-        localStorage.setItem("firstPageLogin", data[1].first_page_url)
+        localStorage.setItem("token", AES.encrypt( data.user.api_token, secretKey.value).toString())
+        localStorage.setItem("firstPageLogin",  AES.encrypt(data[1].first_page_url, secretKey.value).toString() )
         dataLogin.value = data
         OpcionesPaginas.value = [];
         GenerateOpcionDePaginas(data[1].last_page_url)
+
+        
     } catch (error) {
         console.log(error)
     }
@@ -180,25 +200,37 @@ const SendMail: any = async (data: any) => {
         console.log(error)
     }
 }
-const SendInvoice: any = async (data: any, type: any) => {
+const SendInvoice: any = async (data: any, type: any, document: any) => {
     try {
-        varStatusSendInvoice.value = true
-        if (type == 1 || type == 2 || type == 3 || type == 12) {
+        document.isSend = true
+        if (type == 1 || type == 12) {
             let dataSend = await axios.post('/api/ubl2.1/invoice', data)
             notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
-            varStatusSendInvoice.value = false
+            document.isSend = false
+        } else if (type == 2) {
+            let dataSend = await axios.post('/api/ubl2.1/invoice-export', data)
+            notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
+            document.isSend = false
+        } else if (type == 3) {
+            let dataSend = await axios.post('/api/ubl2.1/invoice-contingency', data)
+            notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
+            document.isSend = false
         } else if (type == 4) {
             let dataSend = await axios.post('/api/ubl2.1/credit-note', data)
             notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
-            varStatusSendInvoice.value = false
+            document.isSend = false
         } else if (type == 5) {
             let dataSend = await axios.post('/api/ubl2.1/debit-note', data)
             notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
-            varStatusSendInvoice.value = false
+            document.isSend = false
         } else if (type == 11) {
             let dataSend = await axios.post('/api/ubl2.1/support-document', data)
             notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
-            varStatusSendInvoice.value = false
+            document.isSend = false
+        } else if (type == 13) {
+            let dataSend = await axios.post('/api/ubl2.1/sd-credit-note', data)
+            notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
+            document.isSend = false
         }
         
         getDataLogin(firstPageLogin)
@@ -213,7 +245,9 @@ const notify: any = (message: any) => {
 }
 
 onMounted(async () => {
-
+    const bytes =  await AES.decrypt(localStorage.getItem('firstPageLogin'), secretKey.value).toString(enc.Utf8);
+    var decryptedText: any = await bytes;
+    firstPageLogin.value = decryptedText
     getDataLogin(firstPageLogin.value)
 
 })
@@ -222,14 +256,8 @@ onMounted(async () => {
 <template>
     <section class="container px-0 mx-auto">
         <!-- cabecera -->
-        <div class="sm:flex sm:items-center sm:justify-between">
-            <div>
-                <div class="flex items-center gap-x-3">
-                    <h2 class="text-lg font-medium text-gray-800 ">ARISTA SOFTWARE - CONSULTAR DOCUMENTOS ELECTRONICOS - Nit: 7535365</h2>
-                </div>
-            </div>
-
-            <div class="flex items-center mt-1 gap-x-3">
+        <div class="flex items-center w-full gap-1 mt-1 ">
+            <div class="w-4/12 max-w-md mx-auto">
                 <button
                     class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 transition-colors duration-200 bg-white border rounded-lg gap-x-2 sm:w-auto hover:bg-gray-100">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -245,13 +273,10 @@ onMounted(async () => {
                         </defs>
                     </svg>
 
-                    <span>Enviar Facturas Esto que?</span>
+                    <span>Enviar Facturas</span>
                 </button>
             </div>
-        </div>
-
-        <div class="flex items-center w-full gap-2 mt-1 ">
-            <div class="w-2/12 max-w-md mx-auto">
+            <div class="w-3/12 max-w-md mx-auto">
                 <select id="seleccionar" class="block p-2 border border-gray-500 rounded-lg"
                     @change="getDataLogin(firstPageLogin)" v-model="itemPerPageSelected">
                     <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in varitemPerPage" :key="p">
@@ -259,7 +284,7 @@ onMounted(async () => {
                     </option>
                 </select>
             </div>
-            <div class="w-2/12 max-w-md mx-auto">
+            <div class="max-w-md mx-auto w-/12">
                 <select id="seleccionar" class="block p-2 border border-gray-500 rounded-lg"
                     @change="getDataLogin(paginaSelected)" v-model="paginaSelected">
                     <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in OpcionesPaginas" :key="p">
@@ -267,25 +292,29 @@ onMounted(async () => {
                     </option>
                 </select>
             </div>
+        </div>
+
+        <div class="flex items-center w-full gap-2 mt-1 ">
+            <vue-tailwind-datepicker v-model="dateValue"
+                class="h-[38px] border border-gray-500 rounded-lg  placeholder-gray-600/70" />
             <div class="w-2/12 max-w-md mx-auto">
                 <select @change="getDataLogin(firstPageLogin)" id="seleccionar"
                     class="block p-2 border border-gray-500 rounded-lg" v-model="varSelectedStatusDocument">
                     <option value="ACEPTADA" class="text-white bg-green-700">ACEPTADA</option>
                     <option value="POR ENVIAR" class="text-white bg-red-700">POR ENVIAR</option>
+                    <option value=" " class="text-gray bg-white" placeholder="Estado"></option>
                 </select>
             </div>
-            <vue-tailwind-datepicker v-model="dateValue"
-                class="h-[38px] border border-gray-500 rounded-lg  placeholder-gray-600/70 "
-                placeholder="Seleccionar rango de fechas" @change="onSelectSomething($event)" />
             <div class="relative flex items-center w-2/12 mt-1 md:mt-0">
                 <span class="absolute">
+        
                     <svg class="w-5 h-5 mx-3 text-gray-500 dark:text-gray-600" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12">
                         </path>
                     </svg>
                 </span>
-                <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por cliente"
+                <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por Nit"
                     v-model="varBuscadorCliente"
                     class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-600/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
@@ -309,14 +338,14 @@ onMounted(async () => {
                             d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                     </svg>
                 </span>
-                <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por documento"
+                <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por Número"
                     v-model="varBuscadorNormal"
                     class="block py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-400/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
 
         </div>
         <!-- body -->
-        <div class="flex flex-col mt-6">
+        <div class="flex flex-col mt-2">
             <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
                     <div class="overflow-hidden border border-gray-200 md:rounded-lg">
@@ -340,9 +369,6 @@ onMounted(async () => {
                                     Tipo
                                 </th>
 
-                                <th scope="col" class="px-12 font-normal text-center text-white ">
-                                    Estado
-                                </th>
                                 <th scope="col" class="px-4 font-normal text-center text-white ">
                                     Valor documento
                                 </th>
@@ -352,13 +378,16 @@ onMounted(async () => {
                                 <th scope="col" class="px-4 font-normal text-center text-white ">
                                     Acciones
                                 </th>
+                                <th scope="col" class="px-12 font-normal text-center text-white ">
+                                    Estado
+                                </th>
 
 
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200 text-[11px]">
+                            <tbody class="bg-white divide-gray-200 text-[10px]">
                                 <tr v-for="(document, d) in filterDocumentDate" :key="d" class="hover:bg-[#f3b8b0eb]">
                                     <td>
-                                        <div class="ml-5">
+                                        <div class="ml-1">
                                             <div
                                                 class="relative flex items-center justify-center flex-shrink-0 w-5 h-5 bg-gray-200 rounded-sm">
                                                 <input placeholder="checkbox" type="checkbox"
@@ -387,64 +416,33 @@ onMounted(async () => {
                                                 {{ document.created_at }}</div>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 text-center whitespace-nowrap">
+                                    <td class="px-4 py-2 text-center whitespace-nowrap">
                                         <div>
                                             <h4 class="font-bold text-black">{{ JSON.parse(document.client).name }}</h4>
                                             <p class="font-bold text-gray-900 ">{{ document.customer }}</p>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 text-center whitespace-nowrap">
+                                    <td class="px-4 py-2 text-center whitespace-nowrap">
                                         <div>
                                             <p class="font-bold text-gray-900 ">{{ document.prefix }}{{ document.number }}
                                             </p>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-4 text-center whitespace-nowrap">
+                                    <td class="px-4 py-2 text-center whitespace-nowrap">
                                         <div>
                                             <p class="font-bold text-gray-900 ">
-                                                {{ document.type_document_id == 1 ? 'Factura de venta nacional' :
-                                                    document.type_document_id == 2 ? 'Factura de Exportacion' :
-                                                        document.type_document_id == 3 ? 'Factura de contingencia' :
-                                                            document.type_document_id == 4 ? 'Nota de credito' :
-                                                                document.type_document_id == 5 ? 'Nota de debito' :
-                                                                    document.type_document_id == 11 ? 'Documento sopoerte electronico' :
-                                                                        document.type_document_id == 12 ? 'Factura electronica de venta tipo - 04' :
+                                                {{ document.type_document_id == 1 ? 'Factura venta nacional' :
+                                                   document.type_document_id == 2 ? 'Factura Exportacion' :
+                                                   document.type_document_id == 3 ? 'Factura contingencia' :
+                                                   document.type_document_id == 4 ? 'Nota credito' :
+                                                   document.type_document_id == 5 ? 'Nota debito' :
+                                                   document.type_document_id == 11 ? 'Documento soporte' :
+                                                   document.type_document_id == 12 ? 'Factura venta tipo-04' :
                                                                             '' }}
                                             </p>
                                         </div>
                                     </td>
-                                    <td class="px-12 py-4 text-center whitespace-nowrap">
-                                        <div
-                                            :class="{ 'flex justify-center gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-emerald-100/60 w-fit': document.state_document_id == 1, 'flex gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-red-100/60 w-fit': document.state_document_id == 0 }">
-                                            <svg v-if="document.state_document_id == 1" xmlns="http://www.w3.org/2000/svg"
-                                                width="20" height="20" viewBox="0 0 20 20" fill="#02B126">
-                                                <path
-                                                    d="M9.16667 2.5L16.6667 10C17.0911 10.4745 17.0911 11.1922 16.6667 11.6667L11.6667 16.6667C11.1922 17.0911 10.4745 17.0911 10 16.6667L2.5 9.16667V5.83333C2.5 3.99238 3.99238 2.5 5.83333 2.5H9.16667"
-                                                    stroke="#52525B" stroke-width="1.25" stroke-linecap="round"
-                                                    stroke-linejoin="round">
-                                                </path>
-                                                <circle cx="7.50004" cy="7.49967" r="1.66667" stroke="#52525B"
-                                                    stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
-                                                </circle>
-                                            </svg>
-                                            <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                                viewBox="0 0 20 20" fill="#B20027">
-                                                <path
-                                                    d="M9.16667 2.5L16.6667 10C17.0911 10.4745 17.0911 11.1922 16.6667 11.6667L11.6667 16.6667C11.1922 17.0911 10.4745 17.0911 10 16.6667L2.5 9.16667V5.83333C2.5 3.99238 3.99238 2.5 5.83333 2.5H9.16667"
-                                                    stroke="#52525B" stroke-width="1.25" stroke-linecap="round"
-                                                    stroke-linejoin="round">
-                                                </path>
-                                                <circle cx="7.50004" cy="7.49967" r="1.66667" stroke="#52525B"
-                                                    stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
-                                                </circle>
-                                            </svg>
-                                            <p
-                                                :class="{ 'text-white bg-green-700 w-fit h-fit py-[2px] px-[6px] rounded-lg': document.state_document_id == 1, 'text-white bg-red-700 w-fit h-fit py-[2px] px-[4px] rounded-lg': document.state_document_id == 0 }">
-                                                {{ document.state_document_id == 1 ? 'ACEPTADA' : 'POR ENVIAR ' }}
-                                            </p>
-                                        </div>
-                                    </td>
-                                    <td class="px-4 py-4 text-center whitespace-nowrap">
+                                    <td class="px-4 py-2 text-center whitespace-nowrap">
                                         <div>
                                             <h4 class="text-black text-[14px] ">
                                                 $ {{ formatNumber(document.total) }}
@@ -455,40 +453,59 @@ onMounted(async () => {
                                         <div class="flex gap-1">
                                             <a :href="`http://apidian.oo/api/download/${document.identification_number}/${document.pdf}`"
                                                 target="__blank">
-                                                <img :src="FilePdfIon" class="w-8 h-8" />
+                                                <img :src="FilePdfIon" class="w-8 h-9" />
                                             </a>
                                             <a :href="`http://apidian.oo/api/download/${document.identification_number}/${document.xml}`"
                                                 target="__blank">
 
-                                                <img :src="FileXmlIon" class="w-8 h-8" />
+                                                <img :src="FileXmlIon" class="w-8 h-9" />
                                             </a>
-                                            <img :src="FileZipIon" class="w-8 h-8" />
                                         </div>
                                     </td>
-                                    <td class="flex flex-col gap-2 px-4 py-4 text-center whitespace-nowrap">
+                                    <td class="px-1 py-2 text-center whitespace-nowrap">
                                         <div class="relative">
                                             <button @click.prevent="SendMail(document)"
-                                                class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow group w-28">
+                                                class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow w-22 group">
                                                 <div
-                                                    class="absolute inset-0 w-3 bg-orange-400 transition-all duration-[250ms] ease-out group-hover:w-full">
+                                                    class="absolute inset-0 w-2 bg-orange-400 transition-all duration-[250ms] ease-out group-hover:w-full">
                                                 </div>
                                                 <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
-                                                    <img :src="sendMailIon" class="w-4 h-4 " />
-                                                    <p class="self-center "> Enviar correo</p>
+                                                    <img :src="sendMailIon" class="w-5 h-5 " />
+                                                    <p font-bold class="self-center "> Correo</p>
                                                 </span>
                                             </button>
                                         </div>
+                                    </td>
 
-                                        <div class="relative">
-                                            <button :disabled="document.state_document_id === 1 && varStatusSendInvoice == false" @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id)" class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow group w-28">
-                                                <div :class="{ 'absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full': document.state_document_id == 0, 'absolute inset-0 bg-gray-400 transition-all duration-[250ms] ease-out w-full': document.state_document_id == 1}" />
-                                                <span :class="{ 'relative text-black group-hover:text-white flex gap-1 px-2': document.state_document_id == 0, 'relative text-white flex gap-1 px-2': document.state_document_id == 1 }">
-                                                    <img :src="SendInvoiceIon" class="w-4 h-4 " />
-                                                    <p class="self-center ">{{varStatusSendInvoice == true ? 'Enviando...':'Enviar'}}</p>
-                                                </span>
-                                            </button>
+                                    <td class="px-1 py-2 text-center whitespace-nowrap">
+                                        <div v-if="document.state_document_id == 1" 
+                                            :class="{ 'flex justify-center gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-emerald-100/60 w-fit': document.state_document_id == 1, 'flex gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-red-100/60 w-fit': document.state_document_id == 0 }">
+                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                width="20" height="20" viewBox="0 0 20 20" fill="#02B126">
+                                                <path
+                                                    d="M9.16667 2.5L16.6667 10C17.0911 10.4745 17.0911 11.1922 16.6667 11.6667L11.6667 16.6667C11.1922 17.0911 10.4745 17.0911 10 16.6667L2.5 9.16667V5.83333C2.5 3.99238 3.99238 2.5 5.83333 2.5H9.16667"
+                                                    stroke="#52525B" stroke-width="1.25" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                </path>
+                                                <circle cx="7.50004" cy="7.49967" r="1.66667" stroke="#52525B"
+                                                    stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+                                                </circle>
+                                            </svg>
+                                            <p class="text-white bg-green-700 w-fit h-fit py-[2px] px-[6px] rounded-lg">
+                                                ACEPTADA
+                                            </p>
                                         </div>
-
+                                        <div v-else class="px-1 py-2 text-center whitespace-nowrap">
+                                            <div class="relative">
+                                                <button @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)" class="relative w-24 h-6 overflow-hidden text-xs bg-white rounded-lg shadow group">
+                                                    <div class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
+                                                    <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                                        <img :src="SendInvoiceIon" class="w-4 h-4 "/>
+                                                        <p class="self-center font-bold ">{{document.isSend == true ? 'Enviando...':'Enviar'}}</p>
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -498,9 +515,9 @@ onMounted(async () => {
             </div>
         </div>
         <!-- footer -->
-        <div class="mt-6 sm:flex sm:items-center sm:justify-between ">
+        <div class="mt-2 sm:flex sm:items-center sm:justify-between ">
             <div class="text-sm text-gray-500 ">
-                Paginas <span class="font-medium text-gray-700 ">{{ pagination.from }} de {{ pagination.to }}</span>
+                Reg-<span class="font-medium text-gray-700 ">{{ pagination.from }} al {{ pagination.to }}</span>
             </div>
 
             <div class="flex items-center mt-4 gap-x-4 sm:mt-0">
@@ -510,7 +527,7 @@ onMounted(async () => {
                         class="w-5 h-5 rtl:-scale-x-100">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
                     </svg>
-                    <span>
+                    <span class="relative flex gap-1 px-2 text-black group-hover:text-blue">
                         Anterior
                     </span>
                 </button>

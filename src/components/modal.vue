@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Ref, ref } from 'vue'
 const show: Ref<boolean> = ref(false)
-const openModal = () => {
+/*const openModal = () => {
     show.value = true;
-}
+}*/
 const closeModal = () => {
     show.value = false;
 }

@@ -6,14 +6,19 @@ import { defineStore } from 'pinia'
 // the first argument is a unique id of the store across your application
  const useLoginStore = defineStore('login', {
     state: () => ({ 
-        dataLogin: [] 
+        dataLogin: [],
+        companie_name: '',
     }),
     getters: {
-       getterDataLogin: (state) => state.dataLogin
+       getterDataLogin: (state) => state.dataLogin,
+       getterCompanieName: (state) => state.companie_name
     },
     actions: {
       setDataLogin(data: any) {
         this.dataLogin = data
+      },
+      setCompanieName(data: any) {
+        this.companie_name = data
       }
     },
 })

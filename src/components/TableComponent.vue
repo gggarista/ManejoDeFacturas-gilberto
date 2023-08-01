@@ -451,11 +451,11 @@ onMounted(async () => {
                                     </td>
                                     <td class="px-2 py-2 text-center whitespace-nowrap">
                                         <div class="flex gap-1">
-                                            <a :href="`http://apidian.oo/api/download/${document.identification_number}/${document.pdf}`"
+                                            <a :href="`${apiUrl}/api/download/${document.identification_number}/${document.pdf}`"
                                                 target="__blank">
                                                 <img :src="FilePdfIon" class="w-8 h-9" />
                                             </a>
-                                            <a :href="`http://apidian.oo/api/download/${document.identification_number}/${document.xml}`"
+                                            <a :href="`${apiUrl}/api/download/${document.identification_number}/${document.xml}`"
                                                 target="__blank">
 
                                                 <img :src="FileXmlIon" class="w-8 h-9" />

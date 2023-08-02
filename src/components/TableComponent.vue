@@ -5,6 +5,8 @@ import calendarIon from '../assets/calendar.svg'
 import FilePdfIon from '../assets/pdf-svgrepo-com.svg'
 import FileXmlIon from '../assets/xml-svgrepo-com.svg'
 //import FileZipIon from '../assets/zip-svgrepo-com.svg'
+import modalComponent from './dialogModal.vue'
+import DangerButtonComponent from './Dangerbutton.vue'
 import sendMailIon from '../assets/send-mail-svgrepo-com.svg'
 import SendInvoiceIon from '../assets/send-svgrepo-com.svg'
 import moment from "moment";
@@ -15,8 +17,8 @@ import 'vue3-toastify/dist/index.css';
 import { AES, enc } from 'crypto-js';
 const apiUrl: string = import.meta.env.VITE_API_URL;
 axios.defaults.baseURL = apiUrl;
-const token: string | null = localStorage.getItem('token')
-axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` }
+
+
 
 
 const DataDocument: Ref<Array<object> | null> = ref(null)
@@ -29,13 +31,29 @@ const dateValue: Ref<{ startDate: String, endDate: String }> = ref({
     startDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
     endDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
 })
+const modelSendEmail: Ref<{ company_idnumber: String, prefix: String, number: String, correo: '' }> = ref({
+    company_idnumber: '',
+    prefix: '',
+    number: '',
+    correo: '',
+})
 const OpcionesPaginas: any = ref([])
 const paginaSelected: Ref<String> = ref('1')
 const itemPerPageSelected: Ref<String> = ref('10')
 const varitemPerPage: Ref<Array<String>> = ref(["5", "10", "25", "50", "100", "1000"])
 const varSelectedStatusDocument: Ref<String> = ref("")
 const secretKey: Ref<any> = ref('arista') // Cambia esto por tu clave secreta
+
+
+
+    const TK: any = localStorage.getItem('token');
+    const bytes = AES.decrypt(TK, secretKey.value);
+    const token: string | null = bytes.toString(enc.Utf8);
+    axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` }
+
+
 const firstPageLogin: Ref<any> = ref('')
+const openmodal: Ref<boolean> = ref(false)
 
 //---------- variables computed---------------------
 
@@ -156,7 +174,8 @@ const GenerateOpcionDePaginas: any = (url: any = '') => {
 }
 const getDataLogin: any = async (urlPAginate: any = null) => {
     try {
-        const bytes = AES.decrypt(localStorage.getItem('user'), secretKey.value);
+        const USR: any = localStorage.getItem('user')
+        const bytes = AES.decrypt(USR, secretKey.value);
         var dataL: any = bytes.toString(enc.Utf8);
         var model = JSON.parse(dataL)
         let { data } = await axios.post(`${urlPAginate}&itemPerPage=${itemPerPageSelected.value}&aceptada=${varSelectedStatusDocument.value}&created_start=${dateValue.value.startDate}&created_end=${dateValue.value.endDate}&cliente=${varBuscadorCliente.value}&prefijo=${varBuscadorPrefix.value}&documento=${varBuscadorNormal.value}`, { email: model.email, password: model.password })
@@ -180,25 +199,49 @@ const getDataLogin: any = async (urlPAginate: any = null) => {
         }
         DataDocument.value = data[0]
         pagination.value = data[1]
-        localStorage.setItem("token", AES.encrypt( data.user.api_token, secretKey.value).toString())
-        localStorage.setItem("firstPageLogin",  AES.encrypt(data[1].first_page_url, secretKey.value).toString() )
+        localStorage.setItem("token", AES.encrypt(data.user.api_token, secretKey.value).toString())
+        localStorage.setItem("firstPageLogin", AES.encrypt(data[1].first_page_url, secretKey.value).toString())
         dataLogin.value = data
         OpcionesPaginas.value = [];
         GenerateOpcionDePaginas(data[1].last_page_url)
 
-        
+
     } catch (error) {
         console.log(error)
     }
 }
-const SendMail: any = async (data: any) => {
+const SendMail: any = async () => {
     try {
-        await axios.post('/api/send-email-customer/NO', { "company_idnumber": data.identification_number, "prefix": data.prefix, "number": data.number })
-        await getDataLogin(dataLogin.value[1].first_page_url)
-        alert('envio con exito');
+
+        await axios.post('/api/ubl2.1/send-email', {
+            "prefix": modelSendEmail.value.prefix,
+            "number":  modelSendEmail.value.number,
+            "showacceptrejectbuttons": false,
+            "email_cc_list": [
+                {
+                    "email": modelSendEmail.value.correo
+                }
+            ]
+        })
+        notify(`Correo Enviado con exito`)
+        openmodal.value = false
     } catch (error) {
         console.log(error)
     }
+}
+
+
+const openModalSendEmail: any = (data: any) => {
+
+    modelSendEmail.value.company_idnumber = data.identification_number
+    modelSendEmail.value.prefix = data.prefix
+    modelSendEmail.value.number = data.number
+
+    const model: any = JSON.parse(data.client)
+
+    modelSendEmail.value.correo = model.email
+
+    openmodal.value = true
 }
 const SendInvoice: any = async (data: any, type: any, document: any) => {
     try {
@@ -232,21 +275,25 @@ const SendInvoice: any = async (data: any, type: any, document: any) => {
             notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
             document.isSend = false
         }
-        
+
         getDataLogin(firstPageLogin)
     } catch (error) {
         console.log(error)
     }
 }
 
-const notify: any = (message: any) => { 
+const notify: any = (message: any) => {
 
-    toast(message, { autoClose: false, dangerouslyHTMLString: true}); // ToastOptions
+    toast(message, { autoClose: false, dangerouslyHTMLString: true }); // ToastOptions
 }
 
+
+
+
 onMounted(async () => {
-    const bytes =  await AES.decrypt(localStorage.getItem('firstPageLogin'), secretKey.value).toString(enc.Utf8);
-    var decryptedText: any = await bytes;
+    const FP: any = localStorage.getItem('firstPageLogin')
+    const bytes = AES.decrypt(FP, secretKey.value).toString(enc.Utf8);
+    var decryptedText = await bytes;
     firstPageLogin.value = decryptedText
     getDataLogin(firstPageLogin.value)
 
@@ -307,7 +354,7 @@ onMounted(async () => {
             </div>
             <div class="relative flex items-center w-2/12 mt-1 md:mt-0">
                 <span class="absolute">
-        
+
                     <svg class="w-5 h-5 mx-3 text-gray-500 dark:text-gray-600" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12">
@@ -432,12 +479,12 @@ onMounted(async () => {
                                         <div>
                                             <p class="font-bold text-gray-900 ">
                                                 {{ document.type_document_id == 1 ? 'Factura venta nacional' :
-                                                   document.type_document_id == 2 ? 'Factura Exportacion' :
-                                                   document.type_document_id == 3 ? 'Factura contingencia' :
-                                                   document.type_document_id == 4 ? 'Nota credito' :
-                                                   document.type_document_id == 5 ? 'Nota debito' :
-                                                   document.type_document_id == 11 ? 'Documento soporte' :
-                                                   document.type_document_id == 12 ? 'Factura venta tipo-04' :
+                                                    document.type_document_id == 2 ? 'Factura Exportacion' :
+                                                        document.type_document_id == 3 ? 'Factura contingencia' :
+                                                            document.type_document_id == 4 ? 'Nota credito' :
+                                                                document.type_document_id == 5 ? 'Nota debito' :
+                                                                    document.type_document_id == 11 ? 'Documento soporte' :
+                                                                        document.type_document_id == 12 ? 'Factura venta tipo-04' :
                                                                             '' }}
                                             </p>
                                         </div>
@@ -464,7 +511,7 @@ onMounted(async () => {
                                     </td>
                                     <td class="px-1 py-2 text-center whitespace-nowrap">
                                         <div class="relative">
-                                            <button @click.prevent="SendMail(document)"
+                                            <button @click.prevent="openModalSendEmail(document)"
                                                 class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow w-22 group">
                                                 <div
                                                     class="absolute inset-0 w-2 bg-orange-400 transition-all duration-[250ms] ease-out group-hover:w-full">
@@ -478,10 +525,10 @@ onMounted(async () => {
                                     </td>
 
                                     <td class="px-1 py-2 text-center whitespace-nowrap">
-                                        <div v-if="document.state_document_id == 1" 
+                                        <div v-if="document.state_document_id == 1"
                                             :class="{ 'flex justify-center gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-emerald-100/60 w-fit': document.state_document_id == 1, 'flex gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-red-100/60 w-fit': document.state_document_id == 0 }">
-                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                width="20" height="20" viewBox="0 0 20 20" fill="#02B126">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                viewBox="0 0 20 20" fill="#02B126">
                                                 <path
                                                     d="M9.16667 2.5L16.6667 10C17.0911 10.4745 17.0911 11.1922 16.6667 11.6667L11.6667 16.6667C11.1922 17.0911 10.4745 17.0911 10 16.6667L2.5 9.16667V5.83333C2.5 3.99238 3.99238 2.5 5.83333 2.5H9.16667"
                                                     stroke="#52525B" stroke-width="1.25" stroke-linecap="round"
@@ -497,11 +544,16 @@ onMounted(async () => {
                                         </div>
                                         <div v-else class="px-1 py-2 text-center whitespace-nowrap">
                                             <div class="relative">
-                                                <button @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)" class="relative w-24 h-6 overflow-hidden text-xs bg-white rounded-lg shadow group">
-                                                    <div class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
-                                                    <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
-                                                        <img :src="SendInvoiceIon" class="w-4 h-4 "/>
-                                                        <p class="self-center font-bold ">{{document.isSend == true ? 'Enviando...':'Enviar'}}</p>
+                                                <button
+                                                    @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)"
+                                                    class="relative w-24 h-6 overflow-hidden text-xs bg-white rounded-lg shadow group">
+                                                    <div
+                                                        class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
+                                                    <span
+                                                        class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                                        <img :src="SendInvoiceIon" class="w-4 h-4 " />
+                                                        <p class="self-center font-bold ">{{ document.isSend == true ?
+                                                            'Enviando...' : 'Enviar' }}</p>
                                                     </span>
                                                 </button>
                                             </div>
@@ -538,12 +590,37 @@ onMounted(async () => {
                         Siguiente
                     </span>
 
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
-                </svg>
-            </button>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
+                    </svg>
+                </button>
+            </div>
         </div>
-    </div>
+        <modalComponent :show="openmodal">
+            <template #title>
+                <span class="absolute top-0 bottom-0 right-0 px-4 py-3 max-h-fit " @click="openmodal = false">
+                    <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20">
+                        <title>Close</title>
+                        <path
+                            d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
+                    </svg>
+                </span>
+            </template>
+
+            <template #content>
+                <div>
+                    <label class="block mb-2 font-bold" for="correo">Correo:</label>
+                    <input class="w-full py-2 px-3 rounded border" placeholder="Correo de envio" type="email" id="correo" v-model="modelSendEmail.correo">
+                </div>
+            </template>
+
+            <template #footer>
+                <DangerButtonComponent @click.prevent="SendMail">
+                    enviar
+                </DangerButtonComponent>
+            </template>
+        </modalComponent>
     </section>
 </template>

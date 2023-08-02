@@ -40,7 +40,8 @@ const dataLogin: any = computed({
 
 const CompanieName: any = computed({
     get() {
-        const bytes = AES.decrypt(localStorage.getItem('companie_name'), secretKey.value);
+        const COMPN: any = localStorage.getItem('companie_name')
+        const bytes = AES.decrypt(COMPN, secretKey.value) ;
         var decryptedText: any = bytes.toString(enc.Utf8);
         return decryptedText
     },

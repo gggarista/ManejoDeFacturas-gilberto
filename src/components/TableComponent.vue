@@ -562,7 +562,7 @@ onMounted(async () => {
                 Reg-<span class="font-medium text-gray-700 ">{{ pagination.from }} al {{ pagination.to }}</span>
             </div>
             <div class="w-3/12 max-w-md mx-auto" style="display:flex">
-                <label style="padding-top: 10px;">Linea por Página:  </label>
+                <label style="padding-top: 10px;">RegxPág:  </label>
                 <select id="seleccionar" class="block p-2 border border-gray-500 rounded-lg"
                     @change="getDataLogin(firstPageLogin)" v-model="itemPerPageSelected">
                     <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in varitemPerPage" :key="p">

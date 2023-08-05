@@ -39,17 +39,17 @@ const modelSendEmail: Ref<{ company_idnumber: String, prefix: String, number: St
 })
 const OpcionesPaginas: any = ref([])
 const paginaSelected: Ref<String> = ref('1')
-const itemPerPageSelected: Ref<String> = ref('10')
-const varitemPerPage: Ref<Array<String>> = ref(["5", "10", "25", "50", "100", "1000"])
+const itemPerPageSelected: Ref<String> = ref('15')
+const varitemPerPage: Ref<Array<String>> = ref(["5", "10", "15", "25", "50", "100", "1000"])
 const varSelectedStatusDocument: Ref<String> = ref("")
 const secretKey: Ref<any> = ref('arista') // Cambia esto por tu clave secreta
 
 
 
-    const TK: any = localStorage.getItem('token');
-    const bytes = AES.decrypt(TK, secretKey.value);
-    const token: string | null = bytes.toString(enc.Utf8);
-    axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` }
+const TK: any = localStorage.getItem('token');
+const bytes = AES.decrypt(TK, secretKey.value);
+const token: string | null = bytes.toString(enc.Utf8);
+axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` }
 
 
 const firstPageLogin: Ref<any> = ref('')
@@ -197,6 +197,31 @@ const getDataLogin: any = async (urlPAginate: any = null) => {
         for (const iterator of data[0]) {
             iterator.isSend = false
         }
+
+        // Utilizamos reduce para obtener un nuevo array con registros únicos según 'id'
+        const uniqueObjectsWithStatus1 = data[0].reduce((accumulator: any, currentObject: any) => {
+            // Verificamos si ya existe un registro con el mismo 'id' en el acumulador
+            const existingObject = accumulator.find((obj: any) => obj.id === currentObject.id);
+
+            // Si no existe, agregamos el objeto actual al acumulador
+            if (!existingObject) {
+                accumulator.push(currentObject);
+            } else {
+                // Si existe un objeto con el mismo 'id', verificamos si el 'status' del actual es 1
+                // Si el 'status' del actual es 1, reemplazamos el objeto existente con el actual
+                if (currentObject.state_document_id === 1) {
+                    accumulator[accumulator.indexOf(existingObject)] = currentObject;
+                }
+            }
+
+            return accumulator;
+        }, []);
+
+
+        data[0] = uniqueObjectsWithStatus1
+
+
+
         DataDocument.value = data[0]
         pagination.value = data[1]
         localStorage.setItem("token", AES.encrypt(data.user.api_token, secretKey.value).toString())
@@ -215,7 +240,7 @@ const SendMail: any = async () => {
 
         await axios.post('/api/ubl2.1/send-email', {
             "prefix": modelSendEmail.value.prefix,
-            "number":  modelSendEmail.value.number,
+            "number": modelSendEmail.value.number,
             "showacceptrejectbuttons": false,
             "email_cc_list": [
                 {
@@ -303,43 +328,7 @@ onMounted(async () => {
 <template>
     <section class="container px-0 mx-auto">
         <!-- cabecera -->
-        <div class="flex items-center w-full gap-1 mt-1 ">
-            <div class="w-4/12 max-w-md mx-auto">
-                <button
-                    class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 transition-colors duration-200 bg-white border rounded-lg gap-x-2 sm:w-auto hover:bg-gray-100">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <g clip-path="url(#clip0_3098_154395)">
-                            <path
-                                d="M13.3333 13.3332L9.99997 9.9999M9.99997 9.9999L6.66663 13.3332M9.99997 9.9999V17.4999M16.9916 15.3249C17.8044 14.8818 18.4465 14.1806 18.8165 13.3321C19.1866 12.4835 19.2635 11.5359 19.0351 10.6388C18.8068 9.7417 18.2862 8.94616 17.5555 8.37778C16.8248 7.80939 15.9257 7.50052 15 7.4999H13.95C13.6977 6.52427 13.2276 5.61852 12.5749 4.85073C11.9222 4.08295 11.104 3.47311 10.1817 3.06708C9.25943 2.66104 8.25709 2.46937 7.25006 2.50647C6.24304 2.54358 5.25752 2.80849 4.36761 3.28129C3.47771 3.7541 2.70656 4.42249 2.11215 5.23622C1.51774 6.04996 1.11554 6.98785 0.935783 7.9794C0.756025 8.97095 0.803388 9.99035 1.07431 10.961C1.34523 11.9316 1.83267 12.8281 2.49997 13.5832"
-                                stroke="currentColor" stroke-width="1.67" stroke-linecap="round" stroke-linejoin="round" />
-                        </g>
-                        <defs>
-                            <clipPath id="clip0_3098_154395">
-                                <rect width="20" height="20" fill="white" />
-                            </clipPath>
-                        </defs>
-                    </svg>
-
-                    <span>Enviar Facturas</span>
-                </button>
-            </div>
-            <div class="w-3/12 max-w-md mx-auto">
-                <select id="seleccionar" class="block p-2 border border-gray-500 rounded-lg"
-                    @change="getDataLogin(firstPageLogin)" v-model="itemPerPageSelected">
-                    <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in varitemPerPage" :key="p">
-                        {{ pagina }}
-                    </option>
-                </select>
-            </div>
-            <div class="max-w-md mx-auto w-/12">
-                <select id="seleccionar" class="block p-2 border border-gray-500 rounded-lg"
-                    @change="getDataLogin(paginaSelected)" v-model="paginaSelected">
-                    <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in OpcionesPaginas" :key="p">
-                        Pagina {{ p }}
-                    </option>
-                </select>
-            </div>
-        </div>
+        
 
         <div class="flex items-center w-full gap-2 mt-1 ">
             <vue-tailwind-datepicker v-model="dateValue"
@@ -349,7 +338,7 @@ onMounted(async () => {
                     class="block p-2 border border-gray-500 rounded-lg" v-model="varSelectedStatusDocument">
                     <option value="ACEPTADA" class="text-white bg-green-700">ACEPTADA</option>
                     <option value="POR ENVIAR" class="text-white bg-red-700">POR ENVIAR</option>
-                    <option value=" " class="text-gray bg-white" placeholder="Estado"></option>
+                    <option value=" " class="bg-white text-gray" placeholder="Estado"></option>
                 </select>
             </div>
             <div class="relative flex items-center w-2/12 mt-1 md:mt-0">
@@ -485,6 +474,7 @@ onMounted(async () => {
                                                                 document.type_document_id == 5 ? 'Nota debito' :
                                                                     document.type_document_id == 11 ? 'Documento soporte' :
                                                                         document.type_document_id == 12 ? 'Factura venta tipo-04' :
+                                                                            document.type_document_id == 13 ? 'Ajuste Documento soporte' :
                                                                             '' }}
                                             </p>
                                         </div>
@@ -571,6 +561,23 @@ onMounted(async () => {
             <div class="text-sm text-gray-500 ">
                 Reg-<span class="font-medium text-gray-700 ">{{ pagination.from }} al {{ pagination.to }}</span>
             </div>
+            <div class="w-3/12 max-w-md mx-auto" style="display:flex">
+                <label style="padding-top: 10px;">RegxPág:  </label>
+                <select id="seleccionar" class="block p-2 border border-gray-500 rounded-lg"
+                    @change="getDataLogin(firstPageLogin)" v-model="itemPerPageSelected">
+                    <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in varitemPerPage" :key="p">
+                        {{ pagina }}
+                    </option>
+                </select>
+            </div>
+            <div class="max-w-md mx-auto w-/12">
+                <select id="seleccionar" class="block p-2 border border-gray-500 rounded-lg"
+                    @change="getDataLogin(paginaSelected)" v-model="paginaSelected">
+                    <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in OpcionesPaginas" :key="p">
+                        Pagina {{ p }}
+                    </option>
+                </select>
+            </div>
 
             <div class="flex items-center mt-4 gap-x-4 sm:mt-0">
                 <button @click.prevent="getDataLogin(pagination.prev_page_url)" :disabled="pagination.prev_page_url == null"
@@ -600,7 +607,7 @@ onMounted(async () => {
         <modalComponent :show="openmodal">
             <template #title>
                 <span class="absolute top-0 bottom-0 right-0 px-4 py-3 max-h-fit " @click="openmodal = false">
-                    <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg"
+                    <svg class="w-6 h-6 text-red-500 fill-current" role="button" xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20">
                         <title>Close</title>
                         <path
@@ -612,7 +619,8 @@ onMounted(async () => {
             <template #content>
                 <div>
                     <label class="block mb-2 font-bold" for="correo">Correo:</label>
-                    <input class="w-full py-2 px-3 rounded border" placeholder="Correo de envio" type="email" id="correo" v-model="modelSendEmail.correo">
+                    <input class="w-full px-3 py-2 border rounded" placeholder="Correo de envio" type="email" id="correo"
+                        v-model="modelSendEmail.correo">
                 </div>
             </template>
 

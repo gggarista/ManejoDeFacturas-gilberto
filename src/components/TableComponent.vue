@@ -270,7 +270,8 @@ const openModalSendEmail: any = (data: any) => {
 }
 const SendInvoice: any = async (data: any, type: any, document: any) => {
     try {
-        document.isSend = true
+        document.isSend = true;
+        data.row_id = document.id;
         if (type == 1 || type == 12) {
             let dataSend = await axios.post('/api/ubl2.1/invoice', data)
             notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)

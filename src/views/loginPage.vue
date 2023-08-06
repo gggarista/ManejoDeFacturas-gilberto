@@ -96,7 +96,7 @@ const postLogiun: any = async () => {
             <div class="px-5 md:w-1/2">
                 <h2 class="text-2xl font-bold text-[#002D74] text-center">CONSULTAR FACTURAS</h2>
                 <h2
-                    class="block w-full px-4 py-3 mt-6 font-semibold text-center text-white bg-blue-500 rounded-lg hover:bg-blue-400 focus:bg-blue-400">
+                    class="block w-full px-4 py-3 mt-6 font-semibold text-center text-white rounded-lg bg-cyan-500 hover:bg-blue-400 focus:bg-blue-400">
                     ENTRADA AL SISTEMA</h2>
                 <form class="mt-6">
                     <div>

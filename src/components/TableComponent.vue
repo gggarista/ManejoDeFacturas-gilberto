@@ -28,9 +28,13 @@ const varBuscadorCliente: Ref<String | null> = ref('');
 const pagination: Ref<any | null> = ref({});
 const store: any = useLoginStore()
 const dateValue: Ref<{ startDate: String, endDate: String }> = ref({
-    startDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss'),
-    endDate: moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+    startDate: moment(new Date()).format('YYYY-MM-DD'),
+    endDate: moment(new Date()).format('YYYY-MM-DD')
 })
+const formatter = ref({
+  date: 'YYYY-MM-DD',
+})
+
 const modelSendEmail: Ref<{ company_idnumber: String, prefix: String, number: String, correo: '' }> = ref({
     company_idnumber: '',
     prefix: '',
@@ -39,8 +43,8 @@ const modelSendEmail: Ref<{ company_idnumber: String, prefix: String, number: St
 })
 const OpcionesPaginas: any = ref([])
 const paginaSelected: Ref<String> = ref('1')
-const itemPerPageSelected: Ref<String> = ref('15')
-const varitemPerPage: Ref<Array<String>> = ref(["5", "10", "15", "25", "50", "100", "1000"])
+const itemPerPageSelected: Ref<String> = ref('14')
+const varitemPerPage: Ref<Array<String>> = ref(["5", "10", "14", "25", "50", "100", "1000"])
 const varSelectedStatusDocument: Ref<String> = ref("")
 const secretKey: Ref<any> = ref('arista') // Cambia esto por tu clave secreta
 
@@ -178,7 +182,7 @@ const getDataLogin: any = async (urlPAginate: any = null) => {
         const bytes = AES.decrypt(USR, secretKey.value);
         var dataL: any = bytes.toString(enc.Utf8);
         var model = JSON.parse(dataL)
-        let { data } = await axios.post(`${urlPAginate}&itemPerPage=${itemPerPageSelected.value}&aceptada=${varSelectedStatusDocument.value}&created_start=${dateValue.value.startDate}&created_end=${dateValue.value.endDate}&cliente=${varBuscadorCliente.value}&prefijo=${varBuscadorPrefix.value}&documento=${varBuscadorNormal.value}`, { email: model.email, password: model.password })
+        let { data } = await axios.post(`${urlPAginate}&itemPerPage=${itemPerPageSelected.value}&aceptada=${varSelectedStatusDocument.value}&created_start=${dateValue.value.startDate} 00:00:00&created_end=${dateValue.value.endDate} 23:59:59&cliente=${varBuscadorCliente.value}&prefijo=${varBuscadorPrefix.value}&documento=${varBuscadorNormal.value}`, { email: model.email, password: model.password })
 
         // Paso 1: Ordenar el array por fecha de forma descendente
         data[0].sort((a: any, b: any) => b.created_at - a.created_at);
@@ -271,7 +275,6 @@ const openModalSendEmail: any = (data: any) => {
 const SendInvoice: any = async (data: any, type: any, document: any) => {
     try {
         document.isSend = true;
-        data.row_id = document.id;
         if (type == 1 || type == 12) {
             let dataSend = await axios.post('/api/ubl2.1/invoice', data)
             notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
@@ -332,12 +335,12 @@ onMounted(async () => {
         
 
         <div class="flex items-center w-full gap-2 mt-1 ">
-            <vue-tailwind-datepicker v-model="dateValue"
-                class="h-[38px] border border-gray-500 rounded-lg  placeholder-gray-600/70" />
+            <vue-tailwind-datepicker :formatter="formatter" v-model="dateValue"
+                class="h-[38px] w-[250px] border border-gray-500 rounded-lg  placeholder-gray-600/70" />
             <div class="w-2/12 max-w-md mx-auto">
                 <select @change="getDataLogin(firstPageLogin)" id="seleccionar"
                     class="block p-2 border border-gray-500 rounded-lg" v-model="varSelectedStatusDocument">
-                    <option value="ACEPTADA" class="text-white bg-green-700">ACEPTADA</option>
+                    <option value="ACEPTADA" class="text-white bg-green-700" selected>ACEPTADA</option>
                     <option value="POR ENVIAR" class="text-white bg-red-700">POR ENVIAR</option>
                     <option value=" " class="bg-white text-gray" placeholder="Estado"></option>
                 </select>
@@ -345,10 +348,10 @@ onMounted(async () => {
             <div class="relative flex items-center w-2/12 mt-1 md:mt-0">
                 <span class="absolute">
 
-                    <svg class="w-5 h-5 mx-3 text-gray-500 dark:text-gray-600" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12">
-                        </path>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                     </svg>
                 </span>
                 <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por Nit"
@@ -426,7 +429,7 @@ onMounted(async () => {
                                     <td>
                                         <div class="ml-1">
                                             <div
-                                                class="relative flex items-center justify-center flex-shrink-0 w-5 h-5 bg-gray-200 rounded-sm">
+                                                class="relative flex items-center justify-center flex-shrink-0 w-3 h-3 bg-gray-200 rounded-sm">
                                                 <input placeholder="checkbox" type="checkbox"
                                                     class="absolute w-full h-full opacity-0 cursor-pointer focus:opacity-100 checkbox" />
                                                 <div class="hidden text-white bg-indigo-700 rounded-sm check-icon">
@@ -582,26 +585,26 @@ onMounted(async () => {
 
             <div class="flex items-center mt-4 gap-x-4 sm:mt-0">
                 <button @click.prevent="getDataLogin(pagination.prev_page_url)" :disabled="pagination.prev_page_url == null"
-                    class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        class="w-5 h-5 rtl:-scale-x-100">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
-                    </svg>
-                    <span class="relative flex gap-1 px-2 text-black group-hover:text-blue">
-                        Anterior
+                    class="flex items-center justify-center w-1/2 px-5 py-2 text-sm capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
+                    <span class="bg-blue-400 text-white border border-gray-500 rounded-lg w-40 hover:bg-gray-500">
+                         Pag.Anterior 
                     </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18"/>
+                    </svg>
                 </button>
 
                 <button @click.prevent="getDataLogin(pagination.next_page_url)" :disabled="pagination.next_page_url == null"
                     class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
-                    <span>
-                        Siguiente
-                    </span>
-
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
                     </svg>
+                    <span class="bg-blue-400 text-white border border-gray-500 rounded-lg w-40  hover:bg-gray-500">
+                        Pag.Siguiente
+                    </span>
+
                 </button>
             </div>
         </div>

@@ -102,13 +102,13 @@ const postLogiun: any = async () => {
                     <div>
                         <label class="block text-gray-700">Correo Electronico</label>
                         <input v-model="model.email" type="email" name=""
-                            class="w-full px-4 py-3 mt-2 bg-gray-900 border rounded-lg focus:border-blue-500 focus:bg-white focus:outline-none"
+                            class="w-full px-4 py-3 mt-2 bg-gray-300 border rounded-lg focus:border-blue-500 focus:bg-white focus:outline-none"
                             autofocus required>
                     </div>
                     <div class="mt-4">
                         <label class="block text-gray-700">Contraseña</label>
                         <input v-model="model.pass" type="password" name="" minlength="6"
-                            class="w-full px-4 py-3 mt-2 bg-gray-900 border rounded-lg focus:border-blue-500 focus:bg-white focus:outline-none"
+                            class="w-full px-4 py-3 mt-2 bg-gray-300 border rounded-lg focus:border-blue-500 focus:bg-white focus:outline-none"
                             required>
                     </div>
                     <button @click.prevent="postLogiun" type="submit"

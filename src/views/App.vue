@@ -57,7 +57,7 @@ const logout: any = () => {
   <!-- footer  -->
   <div class="h-8 max-h-8 flex items-center justify-center overflow-hidden  bg-[#cecece] " v-if="$route.name != 'login.page' ">
     <div class="h-full">
-      aristasoftware.com<!-- Contenido principal aquí -->
+      <a href="https://aristasoftware.com" target="_blank" class="text-red-800">httpss://aristasoftware.com</a><!-- Contenido principal aquí -->
     </div>
   </div>
 </template>

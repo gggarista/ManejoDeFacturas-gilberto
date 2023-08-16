@@ -42,7 +42,7 @@ const modelSendEmail: Ref<{ company_idnumber: String, prefix: String, number: St
     correo: '',
 })
 const OpcionesPaginas: any = ref([])
-const paginaSelected: Ref<String> = ref('1')
+const paginaSelected: Ref<String> = ref(`${axios.defaults.baseURL}/login-manejo-factura?page=1`)
 const itemPerPageSelected: Ref<String> = ref('14')
 const varitemPerPage: Ref<Array<String>> = ref(["5", "10", "14", "25", "50", "100", "1000"])
 const varSelectedStatusDocument: Ref<String> = ref("")
@@ -168,7 +168,7 @@ const GenerateOpcionDePaginas: any = (url: any = '') => {
 
         for (var i = 1; i <= lastNumber; i++) {
 
-            OpcionesPaginas.value[i] = `${axios.defaults.baseURL}/login-manejo-factura?page=${i}`
+           OpcionesPaginas.value.push(`${axios.defaults.baseURL}/login-manejo-factura?page=${i}`);
         }
 
 
@@ -233,6 +233,7 @@ const getDataLogin: any = async (urlPAginate: any = null) => {
         dataLogin.value = data
         OpcionesPaginas.value = [];
         GenerateOpcionDePaginas(data[1].last_page_url)
+         paginaSelected.value = `${axios.defaults.baseURL}/login-manejo-factura?page=${data[1].current_page}`;
 
 
     } catch (error) {
@@ -578,7 +579,7 @@ onMounted(async () => {
                 <select id="seleccionar" class="block p-2 border border-gray-500 rounded-lg"
                     @change="getDataLogin(paginaSelected)" v-model="paginaSelected">
                     <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in OpcionesPaginas" :key="p">
-                        Pagina {{ p }}
+                        Pagina {{ p+1 }}
                     </option>
                 </select>
             </div>

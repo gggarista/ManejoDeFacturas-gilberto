@@ -58,6 +58,43 @@ axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` }
 
 const firstPageLogin: Ref<any> = ref('')
 const openmodal: Ref<boolean> = ref(false)
+const selectedDocuments = ref([]); // Almacenar los documentos seleccionados
+const statusSelectedDocuments: Ref<boolean> = ref(false);
+const checkboxSelectedDocuments = ref(null);
+
+
+const totalSelectedDocuments = computed(() => {
+  // Calcular la suma total de los documentos seleccionados
+  return selectedDocuments.value.reduce((total, document) => total + document.total, 0);
+});
+
+const toggleSelectedDocuments = (document:any) => {
+  // Añadir o eliminar documentos de la selección
+  const index = selectedDocuments.value.findIndex((d) => d.id === document.id);
+  if (index === -1) {
+    selectedDocuments.value.push(document);
+  } else {
+    selectedDocuments.value.splice(index, 1);
+  }
+};
+
+const sendSelectedDocuments = () => {
+  // Mostrar los IDs de los documentos seleccionados
+  if (confirm("¿Estás seguro de que deseas ejecutar esta acción?")) {
+    statusSelectedDocuments.value = true;
+    selectedDocuments.value.map((document) => {
+      //console.log(JSON.parse(document.request_api), document.type_document_id, document);
+      SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)
+    });
+    statusSelectedDocuments.value = false;
+    selectedDocuments.value = [];
+    checkboxSelectedDocuments.value.forEach((checkbox) => {
+        checkbox.checked = false;
+    });
+  } else {
+    console.log("Acción cancelada");
+  }
+};
 
 //---------- variables computed---------------------
 
@@ -390,6 +427,26 @@ onMounted(async () => {
             <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
                     <div class="overflow-hidden border border-gray-200 md:rounded-lg">
+
+                        <div class="flex items-center w-full gap-2 mt-1 mb-2">
+                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0">
+                                <label>Total: $ {{ formatNumber(totalSelectedDocuments) }}</label>
+                            </div>
+
+                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="selectedDocuments.length">
+                                <button @click="sendSelectedDocuments" class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow group">
+                                    <div
+                                        class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
+                                    <span
+                                        class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                        <img :src="SendInvoiceIon" class="w-4 h-4 " />
+                                        <p class="self-center font-bold ">{{ statusSelectedDocuments ?
+                                                            'Enviando...' : 'Enviar Seleccionados' }}</p>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+
                         <table class="min-w-full divide-y divide-gray-200 ">
                             <thead class="bg-blue-700  text-[13px] ">
                                 <th></th>
@@ -431,8 +488,9 @@ onMounted(async () => {
                                         <div class="ml-1">
                                             <div
                                                 class="relative flex items-center justify-center flex-shrink-0 w-3 h-3 bg-gray-200 rounded-sm">
-                                                <input placeholder="checkbox" type="checkbox"
-                                                    class="absolute w-full h-full opacity-0 cursor-pointer focus:opacity-100 checkbox" />
+                                                <!--input placeholder="checkbox" type="checkbox"
+                                                    class="absolute w-full h-full opacity-0 cursor-pointer focus:opacity-100 checkbox" /-->
+                                                <input type="checkbox" class="checkbox" @change="toggleSelectedDocuments(document)" ref="checkboxSelectedDocuments">
                                                 <div class="hidden text-white bg-indigo-700 rounded-sm check-icon">
                                                     <svg class="icon icon-tabler icon-tabler-check"
                                                         xmlns="http://www.w3.org/2000/svg" width="20" height="20"

@@ -58,19 +58,19 @@ axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` }
 
 const firstPageLogin: Ref<any> = ref('')
 const openmodal: Ref<boolean> = ref(false)
-const selectedDocuments = ref([]); // Almacenar los documentos seleccionados
+const selectedDocuments: any = ref([]); // Almacenar los documentos seleccionados
 const statusSelectedDocuments: Ref<boolean> = ref(false);
-const checkboxSelectedDocuments = ref(null);
+const checkboxSelectedDocuments: any = ref([]);
 
 
 const totalSelectedDocuments = computed(() => {
   // Calcular la suma total de los documentos seleccionados
-  return selectedDocuments.value.reduce((total, document) => total + document.total, 0);
+  return selectedDocuments.value.reduce((total:number, document:any) => total + document.total, 0);
 });
 
 const toggleSelectedDocuments = (document:any) => {
   // Añadir o eliminar documentos de la selección
-  const index = selectedDocuments.value.findIndex((d) => d.id === document.id);
+  const index = selectedDocuments.value.findIndex((d:any) => d.id === document.id);
   if (index === -1) {
     selectedDocuments.value.push(document);
   } else {
@@ -82,13 +82,13 @@ const sendSelectedDocuments = () => {
   // Mostrar los IDs de los documentos seleccionados
   if (confirm("¿Estás seguro de que deseas ejecutar esta acción?")) {
     statusSelectedDocuments.value = true;
-    selectedDocuments.value.map((document) => {
-      //console.log(JSON.parse(document.request_api), document.type_document_id, document);
-      SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)
+    selectedDocuments.value.map((document:any) => {
+      console.log(JSON.parse(document.request_api), document.type_document_id, document);
+      //SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)
     });
     statusSelectedDocuments.value = false;
     selectedDocuments.value = [];
-    checkboxSelectedDocuments.value.forEach((checkbox) => {
+    checkboxSelectedDocuments.value.forEach((checkbox:any) => {
         checkbox.checked = false;
     });
   } else {

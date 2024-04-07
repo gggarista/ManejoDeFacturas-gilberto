@@ -83,8 +83,8 @@ const sendSelectedDocuments = () => {
   if (confirm("¿Estás seguro de que deseas ejecutar esta acción?")) {
     statusSelectedDocuments.value = true;
     selectedDocuments.value.map((document:any) => {
-      console.log(JSON.parse(document.request_api), document.type_document_id, document);
-      //SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)
+      //console.log(JSON.parse(document.request_api), document.type_document_id, document);
+      SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)
     });
     statusSelectedDocuments.value = false;
     selectedDocuments.value = [];

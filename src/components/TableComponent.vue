@@ -430,7 +430,7 @@ onMounted(async () => {
 
                         <div class="flex items-center w-full gap-2 mt-1 mb-2">
                             <div class="relative flex items-center w-2/12 mt-1 md:mt-0">
-                                <label>Total: $ {{ formatNumber(totalSelectedDocuments) }}</label>
+                                <label>Total: $ {{ formatNumber(totalSelectedDocuments) }} {{ (selectedDocuments.length) ? '('+selectedDocuments.length+')' : '' }}</label>
                             </div>
 
                             <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="selectedDocuments.length">

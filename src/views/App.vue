@@ -2,7 +2,7 @@
 import { Ref, ref, computed } from 'vue'
 import offIcon from '../assets/off.svg'
 import router from '@/plugins/routes/routes'
-import useLoginStore from '@/stores/loginStore'
+//import useLoginStore from '@/stores/loginStore'
 import { AES, enc } from 'crypto-js';
 const secretKey: Ref<any> = ref('arista') // Cambia esto por tu clave secreta
 

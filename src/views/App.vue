@@ -1,15 +1,20 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { Ref, ref, computed } from 'vue'
 import offIcon from '../assets/off.svg'
 import router from '@/plugins/routes/routes'
 import useLoginStore from '@/stores/loginStore'
+import { AES, enc } from 'crypto-js';
+const secretKey: Ref<any> = ref('arista') // Cambia esto por tu clave secreta
 
 
 const store: any = useLoginStore()
 
 const CompanieName: any = computed({
     get() {
-        return store.companie_name
+      const COMPN: any = localStorage.getItem('companie_name')
+        const bytes = AES.decrypt(COMPN, secretKey.value) ;
+        var decryptedText: any = bytes.toString(enc.Utf8);
+        return decryptedText
     },
     set(val: any) {
         localStorage.setItem('companie_name', val)

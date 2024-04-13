@@ -109,6 +109,11 @@ const downloadSelectedDocuemnts = async () => {
   
      // Recorrer todas las URLs y descargar los documentos
       await Promise.all(documentUrls.map(url => downloadDocument(url)));
+
+    selectedDocuments.value = [];
+    checkboxSelectedDocuments.value.forEach((checkbox:any) => {
+        checkbox.checked = false;
+    });
   
   } else {
     console.log("Acción cancelada");

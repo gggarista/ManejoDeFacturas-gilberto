@@ -7,7 +7,7 @@ import { AES, enc } from 'crypto-js';
 const secretKey: Ref<any> = ref('arista') // Cambia esto por tu clave secreta
 
 
-const store: any = useLoginStore()
+//const store: any = useLoginStore()
 
 const CompanieName: any = computed({
     get() {

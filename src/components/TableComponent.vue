@@ -96,6 +96,47 @@ const sendSelectedDocuments = () => {
   }
 };
 
+
+
+const downloadSelectedDocuemnts = async () => {
+  // Mostrar los IDs de los documentos seleccionados
+  if (confirm("¿Está seguro de que descargar los documento seleccionados?")) {
+
+    const documentUrls:any[] = [];
+    selectedDocuments.value.map((pdf:any) => {
+        documentUrls.push(`${apiUrl}/api/download/${pdf.identification_number}/${pdf.pdf}`);
+    });
+  
+     // Recorrer todas las URLs y descargar los documentos
+      await Promise.all(documentUrls.map(url => downloadDocument(url)));
+  
+  } else {
+    console.log("Acción cancelada");
+  }
+};
+
+// Función para descargar un documento desde una URL
+    const downloadDocument = async (url:any) => {
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const filename = getFilenameFromUrl(url);
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error('Error al descargar el documento:', error);
+      }
+    };
+
+    // Función para obtener el nombre de archivo de una URL
+    const getFilenameFromUrl = (url:any) => {
+      const parts = url.split('/');
+      return parts[parts.length - 1];
+    };
 //---------- variables computed---------------------
 
 /**
@@ -439,9 +480,23 @@ onMounted(async () => {
                                         class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
                                     <span
                                         class="relative flex gap-1 px-2 text-black group-hover:text-white">
-                                        <img :src="SendInvoiceIon" class="w-4 h-4 " />
+                                        <img :src="SendInvoiceIon" class="w-4 h-4" />
                                         <p class="self-center font-bold ">{{ statusSelectedDocuments ?
                                                             'Enviando...' : 'Enviar Seleccionados' }}</p>
+                                    </span>
+                                </button>
+
+                               
+                            </div>
+
+                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="selectedDocuments.length">
+                                 <button @click="downloadSelectedDocuemnts" class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow group">
+                                    <div
+                                        class="absolute inset-0 w-3 bg-blue-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
+                                    <span
+                                        class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                        <img :src="FilePdfIon" class="w-8 h-9" />
+                                        <p class="self-center font-bold ">Descargar Seleccionados</p>
                                     </span>
                                 </button>
                             </div>

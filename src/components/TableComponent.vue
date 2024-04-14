@@ -32,7 +32,7 @@ const dateValue: Ref<{ startDate: String, endDate: String }> = ref({
     endDate: moment(new Date()).format('YYYY-MM-DD')
 })
 const formatter = ref({
-  date: 'YYYY-MM-DD',
+    date: 'YYYY-MM-DD',
 })
 
 const modelSendEmail: Ref<{ company_idnumber: String, prefix: String, number: String, correo: '' }> = ref({
@@ -62,67 +62,70 @@ const selectedDocuments: any = ref([]); // Almacenar los documentos seleccionado
 const statusSelectedDocuments: Ref<boolean> = ref(false);
 const checkboxSelectedDocuments: any = ref([]);
 
+const fileBulkInput: any = ref([]);
+const statuFileBulkInput: Ref<boolean> = ref(false);
+const statuSendFileBulk: Ref<boolean> = ref(false);
 
 const totalSelectedDocuments = computed(() => {
-  // Calcular la suma total de los documentos seleccionados
-  return selectedDocuments.value.reduce((total:number, document:any) => total + document.total, 0);
+    // Calcular la suma total de los documentos seleccionados
+    return selectedDocuments.value.reduce((total: number, document: any) => total + document.total, 0);
 });
 
-const toggleSelectedDocuments = (document:any) => {
-  // Añadir o eliminar documentos de la selección
-  const index = selectedDocuments.value.findIndex((d:any) => d.id === document.id);
-  if (index === -1) {
-    selectedDocuments.value.push(document);
-  } else {
-    selectedDocuments.value.splice(index, 1);
-  }
+const toggleSelectedDocuments = (document: any) => {
+    // Añadir o eliminar documentos de la selección
+    const index = selectedDocuments.value.findIndex((d: any) => d.id === document.id);
+    if (index === -1) {
+        selectedDocuments.value.push(document);
+    } else {
+        selectedDocuments.value.splice(index, 1);
+    }
 };
 
 const sendSelectedDocuments = () => {
-  // Mostrar los IDs de los documentos seleccionados
-  if (confirm("¿Estás seguro de que deseas ejecutar esta acción?")) {
-    statusSelectedDocuments.value = true;
-    selectedDocuments.value.map((document:any) => {
-      //console.log(JSON.parse(document.request_api), document.type_document_id, document);
-      SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)
-    });
-    statusSelectedDocuments.value = false;
-    selectedDocuments.value = [];
-    checkboxSelectedDocuments.value.forEach((checkbox:any) => {
-        checkbox.checked = false;
-    });
-  } else {
-    console.log("Acción cancelada");
-  }
+    // Mostrar los IDs de los documentos seleccionados
+    if (confirm("¿Estás seguro de que deseas ejecutar esta acción?")) {
+        statusSelectedDocuments.value = true;
+        selectedDocuments.value.map((document: any) => {
+            //console.log(JSON.parse(document.request_api), document.type_document_id, document);
+            SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)
+        });
+        statusSelectedDocuments.value = false;
+        selectedDocuments.value = [];
+        checkboxSelectedDocuments.value.forEach((checkbox: any) => {
+            checkbox.checked = false;
+        });
+    } else {
+        console.log("Acción cancelada");
+    }
 };
 
 
 
 const downloadSelectedDocuemnts = async () => {
-  // Mostrar los IDs de los documentos seleccionados
-  if (confirm("¿Está seguro de que descargar los documento seleccionados?")) {
+    // Mostrar los IDs de los documentos seleccionados
+    if (confirm("¿Está seguro de que descargar los documento seleccionados?")) {
 
-    const documentUrls:any[] = [];
-    selectedDocuments.value.map((pdf:any) => {
-        documentUrls.push(`${apiUrl}/api/download/${pdf.identification_number}/${pdf.pdf}`);
-    });
-  
-     // Recorrer todas las URLs y descargar los documentos
-      await Promise.all(documentUrls.map(url => downloadDocument(url)));
+        const documentUrls: any[] = [];
+        selectedDocuments.value.map((pdf: any) => {
+            documentUrls.push(`${apiUrl}/api/download/${pdf.identification_number}/${pdf.pdf}`);
+        });
 
-    selectedDocuments.value = [];
-    checkboxSelectedDocuments.value.forEach((checkbox:any) => {
-        checkbox.checked = false;
-    });
-  
-  } else {
-    console.log("Acción cancelada");
-  }
+        // Recorrer todas las URLs y descargar los documentos
+        await Promise.all(documentUrls.map(url => downloadDocument(url)));
+
+        selectedDocuments.value = [];
+        checkboxSelectedDocuments.value.forEach((checkbox: any) => {
+            checkbox.checked = false;
+        });
+
+    } else {
+        console.log("Acción cancelada");
+    }
 };
 
 // Función para descargar un documento desde una URL
-    const downloadDocument = async (url:any) => {
-      try {
+const downloadDocument = async (url: any) => {
+    try {
         const response = await fetch(url);
         const blob = await response.blob();
         const filename = getFilenameFromUrl(url);
@@ -132,16 +135,83 @@ const downloadSelectedDocuemnts = async () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-      } catch (error) {
+    } catch (error) {
         console.error('Error al descargar el documento:', error);
-      }
-    };
+    }
+};
 
-    // Función para obtener el nombre de archivo de una URL
-    const getFilenameFromUrl = (url:any) => {
-      const parts = url.split('/');
-      return parts[parts.length - 1];
+// Función para obtener el nombre de archivo de una URL
+const getFilenameFromUrl = (url: any) => {
+    const parts = url.split('/');
+    return parts[parts.length - 1];
+};
+
+const handleFileChange = () => {
+    statuFileBulkInput.value = true;
+};
+
+const uploadBulkFile = () => {
+    statuSendFileBulk.value = true;
+    const file = fileBulkInput.value.files[0];
+    const reader = new FileReader();
+    let htmlResponse = '';
+    let cantSuccess = 0;
+    let cantFail = 0;
+    reader.onload = (event: any) => {
+        const jsonData = JSON.parse(event.target.result);
+
+        if (Object.keys(jsonData).length > 0) {
+
+            if (jsonData['factura_masiva']) {
+
+                const promises = jsonData['factura_masiva'].map((invoiceData: any) => {
+                    // Configura los headers
+                    const headers = {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': 'Bearer ' + invoiceData.template_token
+                    };
+
+                    // Realiza la solicitud POST con Axios
+                    return axios.post(`${apiUrl}/api/ubl2.1/invoice`, JSON.stringify(invoiceData), {
+                        headers: headers,
+                    })
+                        .then(response => {
+                            const response_model = response.data;
+                            htmlResponse += 'Factura ' + invoiceData.prefix + invoiceData.number;
+                            if (response_model.ResponseDian && response_model.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.isValid == true) {
+                                cantSuccess++;
+                                htmlResponse += " Enviada Exitosamente\n";
+                            } else {
+                                cantFail++;
+                                htmlResponse += " fallo\n";
+                            }
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            // Maneja errores aquí si es necesario
+                        });
+                });
+
+                Promise.all(promises)
+                    .then(() => {
+                        let htmlHeader = '<b>\nFacturas exitosas ' + cantSuccess + '</b>\n';
+                        htmlHeader += '<b>Facturas error ' + cantFail + '</b>\n\n';
+                        // Esto se ejecutará cuando todas las solicitudes Axios se completen
+                        toast(htmlHeader + htmlResponse, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_CENTER,  onClose: () => location.reload() }); // ToastOptions
+
+                    })
+                    .catch(error => {
+                        console.error(error);
+                        // Maneja errores aquí si es necesario
+                    });
+            } else {
+                console.log('formato txt incorrecto');
+            }
+        }
     };
+    reader.readAsText(file);
+};
 //---------- variables computed---------------------
 
 /**
@@ -251,7 +321,7 @@ const GenerateOpcionDePaginas: any = (url: any = '') => {
 
         for (var i = 1; i <= lastNumber; i++) {
 
-           OpcionesPaginas.value.push(`${axios.defaults.baseURL}/login-manejo-factura?page=${i}`);
+            OpcionesPaginas.value.push(`${axios.defaults.baseURL}/login-manejo-factura?page=${i}`);
         }
 
 
@@ -316,7 +386,7 @@ const getDataLogin: any = async (urlPAginate: any = null) => {
         dataLogin.value = data
         OpcionesPaginas.value = [];
         GenerateOpcionDePaginas(data[1].last_page_url)
-         paginaSelected.value = `${axios.defaults.baseURL}/login-manejo-factura?page=${data[1].current_page}`;
+        paginaSelected.value = `${axios.defaults.baseURL}/login-manejo-factura?page=${data[1].current_page}`;
 
 
     } catch (error) {
@@ -416,7 +486,7 @@ onMounted(async () => {
 <template>
     <section class="container px-0 mx-auto">
         <!-- cabecera -->
-        
+
 
         <div class="flex items-center w-full gap-2 mt-1 ">
             <vue-tailwind-datepicker :formatter="formatter" v-model="dateValue"
@@ -476,34 +546,51 @@ onMounted(async () => {
 
                         <div class="flex items-center w-full gap-2 mt-1 mb-2">
                             <div class="relative flex items-center w-2/12 mt-1 md:mt-0">
-                                <label>Total: $ {{ formatNumber(totalSelectedDocuments) }} {{ (selectedDocuments.length) ? '('+selectedDocuments.length+')' : '' }}</label>
+                                <label>Total: $ {{ formatNumber(totalSelectedDocuments) }} {{ (selectedDocuments.length)
+                                    ? '(' + selectedDocuments.length + ')' : '' }}</label>
                             </div>
 
                             <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="selectedDocuments.length">
-                                <button @click="sendSelectedDocuments" class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow group">
+                                <button @click="sendSelectedDocuments"
+                                    class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow group">
                                     <div
                                         class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
-                                    <span
-                                        class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                    <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
                                         <img :src="SendInvoiceIon" class="w-4 h-4" />
                                         <p class="self-center font-bold ">{{ statusSelectedDocuments ?
-                                                            'Enviando...' : 'Enviar Seleccionados' }}</p>
+                                            'Enviando...' : 'Enviar Seleccionados' }}</p>
                                     </span>
                                 </button>
 
-                               
+
                             </div>
 
                             <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="selectedDocuments.length">
-                                 <button @click="downloadSelectedDocuemnts" class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow group">
+                                <button @click="downloadSelectedDocuemnts"
+                                    class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow group">
                                     <div
                                         class="absolute inset-0 w-3 bg-blue-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
-                                    <span
-                                        class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                    <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
                                         <img :src="FilePdfIon" class="w-8 h-9" />
                                         <p class="self-center font-bold ">Descargar Seleccionados</p>
                                     </span>
                                 </button>
+                            </div>
+                            
+                            <input type="file" ref="fileBulkInput" @change="handleFileChange" accept=".txt">
+
+                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="statuFileBulkInput">
+                               
+                                <button @click="uploadBulkFile"
+                                    class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow group">
+                                    <div
+                                        class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
+                                    <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                        <img :src="SendInvoiceIon" class="w-4 h-4" />
+                                        <p class="self-center font-bold ">{{ statuSendFileBulk ? 'Enviando Facturas ...' : 'Subir Archivo' }}</p>
+                                    </span>
+                                </button>
+                                
                             </div>
                         </div>
 
@@ -550,7 +637,9 @@ onMounted(async () => {
                                                 class="relative flex items-center justify-center flex-shrink-0 w-3 h-3 bg-gray-200 rounded-sm">
                                                 <!--input placeholder="checkbox" type="checkbox"
                                                     class="absolute w-full h-full opacity-0 cursor-pointer focus:opacity-100 checkbox" /-->
-                                                <input type="checkbox" class="checkbox" @change="toggleSelectedDocuments(document)" ref="checkboxSelectedDocuments">
+                                                <input type="checkbox" class="checkbox"
+                                                    @change="toggleSelectedDocuments(document)"
+                                                    ref="checkboxSelectedDocuments">
                                                 <div class="hidden text-white bg-indigo-700 rounded-sm check-icon">
                                                     <svg class="icon icon-tabler icon-tabler-check"
                                                         xmlns="http://www.w3.org/2000/svg" width="20" height="20"
@@ -571,7 +660,8 @@ onMounted(async () => {
                                     <td class="px-2 py-2 text-center whitespace-nowrap">
                                         <div class="flex gap-1">
 
-                                            <div class="self-center px-1 py-1 font-bold text-blue-900 bg-blue-100 rounded">
+                                            <div
+                                                class="self-center px-1 py-1 font-bold text-blue-900 bg-blue-100 rounded">
                                                 {{ document.created_at }}</div>
                                         </div>
                                     </td>
@@ -583,7 +673,8 @@ onMounted(async () => {
                                     </td>
                                     <td class="px-4 py-2 text-center whitespace-nowrap">
                                         <div>
-                                            <p class="font-bold text-gray-900 ">{{ document.prefix }}{{ document.number }}
+                                            <p class="font-bold text-gray-900 ">{{ document.prefix }}{{ document.number
+                                                }}
                                             </p>
                                         </div>
                                     </td>
@@ -598,7 +689,7 @@ onMounted(async () => {
                                                                     document.type_document_id == 11 ? 'Documento soporte' :
                                                                         document.type_document_id == 12 ? 'Factura venta tipo-04' :
                                                                             document.type_document_id == 13 ? 'Ajuste Documento soporte' :
-                                                                            '' }}
+                                                                                '' }}
                                             </p>
                                         </div>
                                     </td>
@@ -629,7 +720,8 @@ onMounted(async () => {
                                                 <div
                                                     class="absolute inset-0 w-2 bg-orange-400 transition-all duration-[250ms] ease-out group-hover:w-full">
                                                 </div>
-                                                <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                                <span
+                                                    class="relative flex gap-1 px-2 text-black group-hover:text-white">
                                                     <img :src="sendMailIon" class="w-5 h-5 " />
                                                     <p font-bold class="self-center "> Correo</p>
                                                 </span>
@@ -685,10 +777,11 @@ onMounted(async () => {
                 Reg-<span class="font-medium text-gray-700 ">{{ pagination.from }} al {{ pagination.to }}</span>
             </div>
             <div class="w-3/12 max-w-md mx-auto" style="display:flex">
-                <label style="padding-top: 10px;">RegxPág:  </label>
+                <label style="padding-top: 10px;">RegxPág: </label>
                 <select id="seleccionar" class="block p-2 border border-gray-500 rounded-lg"
                     @change="getDataLogin(firstPageLogin)" v-model="itemPerPageSelected">
-                    <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in varitemPerPage" :key="p">
+                    <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in varitemPerPage"
+                        :key="p">
                         {{ pagina }}
                     </option>
                 </select>
@@ -696,29 +789,34 @@ onMounted(async () => {
             <div class="max-w-md mx-auto w-/12">
                 <select id="seleccionar" class="block p-2 border border-gray-500 rounded-lg"
                     @change="getDataLogin(paginaSelected)" v-model="paginaSelected">
-                    <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in OpcionesPaginas" :key="p">
-                        Pagina {{ p+1 }}
+                    <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in OpcionesPaginas"
+                        :key="p">
+                        Pagina {{ p + 1 }}
                     </option>
                 </select>
             </div>
 
             <div class="flex items-center mt-4 gap-x-4 sm:mt-0">
-                <button @click.prevent="getDataLogin(pagination.prev_page_url)" :disabled="pagination.prev_page_url == null"
+                <button @click.prevent="getDataLogin(pagination.prev_page_url)"
+                    :disabled="pagination.prev_page_url == null"
                     class="flex items-center justify-center w-1/2 px-5 py-2 text-sm capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
                     <span class="bg-blue-400 text-white border border-gray-500 rounded-lg w-40 hover:bg-gray-500">
-                         Pag.Anterior 
+                        Pag.Anterior
                     </span>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18"/>
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
                     </svg>
                 </button>
 
-                <button @click.prevent="getDataLogin(pagination.next_page_url)" :disabled="pagination.next_page_url == null"
+                <button @click.prevent="getDataLogin(pagination.next_page_url)"
+                    :disabled="pagination.next_page_url == null"
                     class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
                     </svg>
                     <span class="bg-blue-400 text-white border border-gray-500 rounded-lg w-40  hover:bg-gray-500">
                         Pag.Siguiente
@@ -742,8 +840,8 @@ onMounted(async () => {
             <template #content>
                 <div>
                     <label class="block mb-2 font-bold" for="correo">Correo:</label>
-                    <input class="w-full px-3 py-2 border rounded" placeholder="Correo de envio" type="email" id="correo"
-                        v-model="modelSendEmail.correo">
+                    <input class="w-full px-3 py-2 border rounded" placeholder="Correo de envio" type="email"
+                        id="correo" v-model="modelSendEmail.correo">
                 </div>
             </template>
 

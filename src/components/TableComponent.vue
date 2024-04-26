@@ -9,6 +9,7 @@ import modalComponent from './dialogModal.vue'
 import DangerButtonComponent from './Dangerbutton.vue'
 import sendMailIon from '../assets/send-mail-svgrepo-com.svg'
 import SendInvoiceIon from '../assets/send-svgrepo-com.svg'
+import CSVFile from '../assets/csv-file.svg'
 import moment from "moment";
 import useLoginStore from '@/stores/loginStore'
 import axios from "axios";
@@ -212,6 +213,44 @@ const uploadBulkFile = () => {
     };
     reader.readAsText(file);
 };
+
+function exportToCsv(filename:string, headers:any, rows:any) {
+    // Crear un enlace temporal
+    var link = document.createElement('a');
+    if (link.download !== undefined) {
+        // Crear el contenido del CSV con los títulos
+        var csv = headers.join(';') + '\n'; // Agregar títulos
+        rows.forEach(function(row:any) {
+            csv += row.join(';') + '\n';
+        });
+        // Convertir el contenido del CSV a Blob
+        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        // Crear URL del Blob
+        var url = URL.createObjectURL(blob);
+        // Configurar el enlace de descarga
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        // Simular el clic en el enlace
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+}
+
+const  generateCsv = () => {
+    var exportData:any[] = [];
+    if(filterDocumentDate.value.length > 0){
+        var headers = ['Prefijo', 'Numero', 'Cufe', 'Fecha','Hora', 'Fecha Aceptacion', 'Resolucion'];
+        const fileName = filterDocumentDate.value[0].identification_number+'_'+dateValue.value.startDate+'_'+dateValue.value.endDate+'.csv';
+        filterDocumentDate.value.forEach((element:any) => {
+            const request = JSON.parse(element.request_api);
+            exportData.push([element.prefix, element.number, element.cufe, request.date, request.time, element.date_issue, request.resolution_number]);
+        });
+        exportToCsv(fileName, headers, exportData);
+    }
+  
+}
 //---------- variables computed---------------------
 
 /**
@@ -592,6 +631,20 @@ onMounted(async () => {
                                 </button>
                                 
                             </div>
+
+                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0">
+                               
+                               <button @click="generateCsv" v-if="DataDocument?.length"
+                                   class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow group">
+                                   <div
+                                       class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
+                                   <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                       <img :src="CSVFile" class="w-4 h-4" />
+                                       <p class="self-center font-bold ">Exportar</p>
+                                   </span>
+                               </button>
+                               
+                           </div>
                         </div>
 
                         <table class="min-w-full divide-y divide-gray-200 ">

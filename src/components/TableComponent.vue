@@ -632,7 +632,7 @@ onMounted(async () => {
                                 
                             </div>
 
-                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0">
+                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0 ml-auto">
                                
                                <button @click="generateCsv" v-if="DataDocument?.length"
                                    class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow group">

@@ -44,9 +44,9 @@ const modelSendEmail: Ref<{ company_idnumber: String, prefix: String, number: St
 })
 const OpcionesPaginas: any = ref([])
 const paginaSelected: Ref<String> = ref(`${axios.defaults.baseURL}/login-manejo-factura?page=1`)
-const itemPerPageSelected: Ref<String> = ref('14')
+const itemPerPageSelected: Ref<String> = ref('50')
 const varitemPerPage: Ref<Array<String>> = ref(["5", "10", "14", "25", "50", "100", "1000"])
-const varSelectedStatusDocument: Ref<String> = ref("")
+const varSelectedStatusDocument: Ref<String> = ref("POR ENVIAR")
 const secretKey: Ref<any> = ref('arista') // Cambia esto por tu clave secreta
 
 
@@ -547,7 +547,7 @@ onMounted(async () => {
                             d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                     </svg>
                 </span>
-                <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por Nit"
+                <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por Cliente"
                     v-model="varBuscadorCliente"
                     class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-600/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>

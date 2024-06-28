@@ -334,6 +334,8 @@ watch(dateValue, () => {
 
 watch(varSelectedStatusDocument, () => {
     selectedDocuments.value = [];
+    fileBulkInput.value = [];
+    nameFile.value = '';
 })
 
 //---------- metodos---------------------
@@ -622,7 +624,7 @@ onMounted(async () => {
                                     class="relative w-30 h-8 overflow-hidden text-xs  rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
                                     <span class="relative flex gap-1 px-2 text-black  ">
                                         <img :src="SendInvoiceIon" class="w-4 h-4" />
-                                        <p class="self-center font-bold group-hover:text-white ">{{ statusSelectedDocuments ? 'Enviando...' : 'Enviar Seleccionados' }}</p>
+                                        <p class="self-center font-bold text-white group-hover:text-white ">{{ statusSelectedDocuments ? 'Enviando...' : 'Enviar Seleccionados' }}</p>
                                     </span>
                                 </button>
 
@@ -633,7 +635,7 @@ onMounted(async () => {
                                 v-if="selectedDocuments.length > 0">
                                 <button @click="downloadSelectedDocuemnts"
                                     class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow">
-                                    <span class="relative flex gap-1 px-2 text-black hover:text-white bg-[#2471A3] hover:bg-[#85C1E9]">
+                                    <span class="relative flex gap-1 px-2 text-white hover:text-white bg-[#2471A3] hover:bg-[#85C1E9]">
                                         <img :src="FilePdfIon" class="w-8 h-9" />
                                         <p class="self-center font-bold ">Descargar Seleccionados</p>
                                     </span>
@@ -651,10 +653,11 @@ onMounted(async () => {
                                     {{ nameFile }}
                                 </label>
                             </div>
-                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="statuFileBulkInput">
+
+                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="statuFileBulkInput && fileBulkInput.length > 0">
                                 <button @click="uploadBulkFile"
                                     class="relative w-30 h-8 overflow-hidden text-xs  rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
-                                    <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                    <span class="relative flex gap-1 px-2 text-white group-hover:text-white">
                                         <img :src="SendInvoiceIon" class="w-4 h-4" />
                                         <p class="self-center font-bold ">{{ statuSendFileBulk ? 'Enviando Facturas ...': 'Subir archivo a la base de datos' }}</p>
                                     </span>
@@ -664,7 +667,7 @@ onMounted(async () => {
                             <div class="relative flex items-center w-2/12 mt-1 md:mt-0 ml-auto" v-if="varSelectedStatusDocument == 'ACEPTADA'">
                                 <button @click="generateCsv" v-if="DataDocument?.length"
                                     class="relative w-30 h-8 overflow-hidden text-xs  rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
-                                    <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                    <span class="relative flex gap-1 px-2 text-white group-hover:text-white">
                                         <img :src="CSVFile" class="w-4 h-4" />
                                         <p class="self-center font-bold ">Exportar</p>
                                     </span>
@@ -675,7 +678,7 @@ onMounted(async () => {
                                 v-if="varSelectedStatusDocument == 'POR ENVIAR' && selectedDocuments.length > 0">
                                 <button @click.prevent="openModalChangeDate()"
                                     class="relative h-8 overflow-hidden text-xs  rounded-lg shadow w-22 bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
-                                    <span class="relative flex gap-1 px-2 text-black font-bold">
+                                    <span class="relative flex gap-1 px-2 text-white font-bold">
                                         <img :src="calendarIon" class="w-5 h-5 " />
                                         <p font-bold class="self-center group-hover:text-white"> Cambiar Fecha</p>
                                     </span>

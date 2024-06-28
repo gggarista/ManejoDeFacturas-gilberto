@@ -627,7 +627,7 @@ onMounted(async () => {
 
                             </div>
 
-                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="selectedDocuments.length">
+                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0" >
                                 <button @click="downloadSelectedDocuemnts"
                                     class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow group">
                                     <div
@@ -686,7 +686,7 @@ onMounted(async () => {
 
                         <table class="min-w-full divide-y divide-gray-200 ">
                             <thead class="bg-blue-700  text-[13px] ">
-                                <th  v-if="varSelectedStatusDocument == 'POR ENVIAR'" ></th>
+                                <th ></th>
                                 <th scope="col" class="px-4 font-normal text-center text-gray-300 ">
                                     <span>#</span>
                                 </th>
@@ -721,7 +721,7 @@ onMounted(async () => {
                             </thead>
                             <tbody class="bg-white divide-gray-200 text-[10px]">
                                 <tr v-for="(document, d) in filterDocumentDate" :key="d" class="hover:bg-[#f3b8b0eb]">
-                                    <td v-if="varSelectedStatusDocument == 'POR ENVIAR'" >
+                                    <td>
                                         <div class="ml-1">
                                             <div
                                                 class="relative flex items-center justify-center flex-shrink-0 w-3 h-3 bg-gray-200 rounded-sm">

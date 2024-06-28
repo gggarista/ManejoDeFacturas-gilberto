@@ -44,7 +44,7 @@ const modelSendEmail: Ref<{ company_idnumber: String, prefix: String, number: St
 })
 const OpcionesPaginas: any = ref([])
 const paginaSelected: Ref<String> = ref(`${axios.defaults.baseURL}/login-manejo-factura?page=1`)
-const itemPerPageSelected: Ref<String> = ref('50')
+const itemPerPageSelected: Ref<String> = ref('1000')
 const varitemPerPage: Ref<Array<String>> = ref(["5", "10", "14", "25", "50", "100", "1000"])
 const varSelectedStatusDocument: Ref<String> = ref("POR ENVIAR")
 const secretKey: Ref<any> = ref('arista') // Cambia esto por tu clave secreta
@@ -301,7 +301,6 @@ const filterDocumentCliente: any = computed(() => {
         });
     }
 })
-
 const filterStatusDocument: any = computed(() => {
     if (DataDocument.value) {
         return filterDocumentCliente.value.filter((item: any) => {
@@ -314,7 +313,6 @@ const filterStatusDocument: any = computed(() => {
         });
     }
 });
-
 const filterDocumentDate: any = computed(() => {
     if (DataDocument.value) {
         return filterStatusDocument.value.filter((item: any) => {
@@ -329,7 +327,10 @@ const filterDocumentDate: any = computed(() => {
 
 watch(dateValue, (newX: any) => {
     getDataLogin(firstPageLogin.value)
-    console.log(newX)
+})
+
+watch(varSelectedStatusDocument, () => {
+    selectedDocuments.value = []; 
 })
 
 //---------- metodos---------------------
@@ -638,7 +639,7 @@ onMounted(async () => {
                                 </button>
                             </div>
                             
-                            <input type="file" ref="fileBulkInput" @change="handleFileChange" accept=".txt">
+                            <input type="file" ref="fileBulkInput" @change="handleFileChange" accept=".txt" v-if="varSelectedStatusDocument == 'POR ENVIAR'" >
 
                             <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="statuFileBulkInput">
                                
@@ -654,7 +655,7 @@ onMounted(async () => {
                                 
                             </div>
 
-                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0 ml-auto">
+                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0 ml-auto" v-if="varSelectedStatusDocument == 'ACEPTADA'" >
                                
                                <button @click="generateCsv" v-if="DataDocument?.length"
                                    class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow group">
@@ -668,7 +669,7 @@ onMounted(async () => {
                                
                            </div>
 
-                           <div class="relative">
+                           <div class="relative" v-if="varSelectedStatusDocument == 'POR ENVIAR' && selectedDocuments.length > 0" >
                                 <button @click.prevent="openModalChangeDate()"
                                     class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow w-22 group">
                                     <div
@@ -685,7 +686,7 @@ onMounted(async () => {
 
                         <table class="min-w-full divide-y divide-gray-200 ">
                             <thead class="bg-blue-700  text-[13px] ">
-                                <th></th>
+                                <th  v-if="varSelectedStatusDocument == 'POR ENVIAR'" ></th>
                                 <th scope="col" class="px-4 font-normal text-center text-gray-300 ">
                                     <span>#</span>
                                 </th>
@@ -720,7 +721,7 @@ onMounted(async () => {
                             </thead>
                             <tbody class="bg-white divide-gray-200 text-[10px]">
                                 <tr v-for="(document, d) in filterDocumentDate" :key="d" class="hover:bg-[#f3b8b0eb]">
-                                    <td>
+                                    <td v-if="varSelectedStatusDocument == 'POR ENVIAR'" >
                                         <div class="ml-1">
                                             <div
                                                 class="relative flex items-center justify-center flex-shrink-0 w-3 h-3 bg-gray-200 rounded-sm">

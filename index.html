@@ -1,13 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Manejo de Facturas</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="./src/assets/ARISTA.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>
+   Control de documentos electronicos - Arista software
+  </title>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var title = "Control de documentos electrónicos - Arista software";
+      var position = 0;
+
+      function scrollTitle() {
+        document.title = title.substring(position) + title.substring(0, position);
+        position = (position + 1) % title.length;
+      }
+
+      setInterval(scrollTitle, 200); // Ajusta la velocidad cambiando el valor 200
+    });
+  </script>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
 </html>

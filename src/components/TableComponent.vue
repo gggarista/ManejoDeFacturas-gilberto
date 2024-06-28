@@ -674,7 +674,7 @@ onMounted(async () => {
                             <div class="relative"
                                 v-if="varSelectedStatusDocument == 'POR ENVIAR' && selectedDocuments.length > 0">
                                 <button @click.prevent="openModalChangeDate()"
-                                    class="relative h-6 overflow-hidden text-xs  rounded-lg shadow w-22 bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
+                                    class="relative h-8 overflow-hidden text-xs  rounded-lg shadow w-22 bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
                                     <span class="relative flex gap-1 px-2 text-black font-bold">
                                         <img :src="calendarIon" class="w-5 h-5 " />
                                         <p font-bold class="self-center group-hover:text-white"> Cambiar Fecha</p>

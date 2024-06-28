@@ -48,7 +48,7 @@ const itemPerPageSelected: Ref<String> = ref('50')
 const varitemPerPage: Ref<Array<String>> = ref(["5", "10", "14", "25", "50", "100", "1000"])
 const varSelectedStatusDocument: Ref<String> = ref("POR ENVIAR")
 const secretKey: Ref<any> = ref('arista') // Cambia esto por tu clave secreta
-
+const userPassword: Ref<any> = ref('') // Cambia esto por tu clave secreta
 
 
 const TK: any = localStorage.getItem('token');
@@ -58,7 +58,8 @@ axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` }
 
 
 const firstPageLogin: Ref<any> = ref('')
-const openmodal: Ref<boolean> = ref(false)
+const openmodal: Ref<boolean> = ref(false);
+const openmodalStatusChangeDate: Ref<boolean> = ref(false)
 const selectedDocuments: any = ref([]); // Almacenar los documentos seleccionados
 const statusSelectedDocuments: Ref<boolean> = ref(false);
 const checkboxSelectedDocuments: any = ref([]);
@@ -513,7 +514,24 @@ const notify: any = (message: any) => {
     toast(message, { autoClose: false, dangerouslyHTMLString: true }); // ToastOptions
 }
 
+const openModalChangeDate: any = () => {
 
+    openmodalStatusChangeDate.value = true
+}
+
+const sendChangeDate: any = async () => {
+    try {
+
+       let responseData = await axios.post('/api/ubl2.1/change-date', {
+            "password": userPassword.value,
+        })
+        notify(`<p style="font-size: 12px;" >${responseData.data.message}</p>`);
+        openmodalStatusChangeDate.value = false;
+        userPassword.value = '';
+    } catch (error) {
+        console.log(error)
+    }
+}
 
 
 onMounted(async () => {
@@ -649,6 +667,20 @@ onMounted(async () => {
                                </button>
                                
                            </div>
+
+                           <div class="relative">
+                                <button @click.prevent="openModalChangeDate()"
+                                    class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow w-22 group">
+                                    <div
+                                        class="absolute inset-0 w-2 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full">
+                                    </div>
+                                    <span
+                                        class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                        <img :src="calendarIon" class="w-5 h-5 " />
+                                        <p font-bold class="self-center "> Cambiar Fecha</p>
+                                    </span>
+                                </button>
+                            </div>
                         </div>
 
                         <table class="min-w-full divide-y divide-gray-200 ">
@@ -904,6 +936,33 @@ onMounted(async () => {
 
             <template #footer>
                 <DangerButtonComponent @click.prevent="SendMail">
+                    enviar
+                </DangerButtonComponent>
+            </template>
+        </modalComponent>
+
+        <modalComponent :show="openmodalStatusChangeDate">
+            <template #title>
+                <span class="absolute top-0 bottom-0 right-0 px-4 py-3 max-h-fit " @click="openmodalStatusChangeDate = false">
+                    <svg class="w-6 h-6 text-red-500 fill-current" role="button" xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20">
+                        <title>Close</title>
+                        <path
+                            d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
+                    </svg>
+                </span>
+            </template>
+
+            <template #content>
+                <div>
+                    <label class="block mb-2 font-bold" for="correo">Contraseña:</label>
+                    <input class="w-full px-3 py-2 border rounded" placeholder="Contraseña de inicio de sesión" type="password"
+                        id="user_password" v-model="userPassword">
+                </div>
+            </template>
+
+            <template #footer>
+                <DangerButtonComponent @click.prevent="sendChangeDate">
                     enviar
                 </DangerButtonComponent>
             </template>

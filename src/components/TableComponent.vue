@@ -68,6 +68,7 @@ const fileBulkInput: any = ref([]);
 const statuFileBulkInput: Ref<boolean> = ref(false);
 const statuSendFileBulk: Ref<boolean> = ref(false);
 
+const nameFile: Ref<any> = ref('')
 const totalSelectedDocuments = computed(() => {
     // Calcular la suma total de los documentos seleccionados
     return selectedDocuments.value.reduce((total: number, document: any) => total + document.total, 0);
@@ -149,6 +150,8 @@ const getFilenameFromUrl = (url: any) => {
 };
 
 const handleFileChange = () => {
+    console.log({ fileBulkInput });
+    nameFile.value = fileBulkInput.value.files[0].name;
     statuFileBulkInput.value = true;
 };
 
@@ -200,7 +203,7 @@ const uploadBulkFile = () => {
                         let htmlHeader = '<b>\nFacturas exitosas ' + cantSuccess + '</b>\n';
                         htmlHeader += '<b>Facturas error ' + cantFail + '</b>\n\n';
                         // Esto se ejecutará cuando todas las solicitudes Axios se completen
-                        toast(htmlHeader + htmlResponse, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_CENTER,  onClose: () => location.reload() }); // ToastOptions
+                        toast(htmlHeader + htmlResponse, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_CENTER, onClose: () => location.reload() }); // ToastOptions
 
                     })
                     .catch(error => {
@@ -215,13 +218,13 @@ const uploadBulkFile = () => {
     reader.readAsText(file);
 };
 
-function exportToCsv(filename:string, headers:any, rows:any) {
+function exportToCsv(filename: string, headers: any, rows: any) {
     // Crear un enlace temporal
     var link = document.createElement('a');
     if (link.download !== undefined) {
         // Crear el contenido del CSV con los títulos
         var csv = headers.join(';') + '\n'; // Agregar títulos
-        rows.forEach(function(row:any) {
+        rows.forEach(function (row: any) {
             csv += row.join(';') + '\n';
         });
         // Convertir el contenido del CSV a Blob
@@ -239,18 +242,18 @@ function exportToCsv(filename:string, headers:any, rows:any) {
     }
 }
 
-const  generateCsv = () => {
-    var exportData:any[] = [];
-    if(filterDocumentDate.value.length > 0){
-        var headers = ['Prefijo', 'Numero', 'Cufe', 'Fecha','Hora', 'Fecha Aceptacion', 'Resolucion'];
-        const fileName = filterDocumentDate.value[0].identification_number+'_'+dateValue.value.startDate+'_'+dateValue.value.endDate+'.csv';
-        filterDocumentDate.value.forEach((element:any) => {
+const generateCsv = () => {
+    var exportData: any[] = [];
+    if (filterDocumentDate.value.length > 0) {
+        var headers = ['Prefijo', 'Numero', 'Cufe', 'Fecha', 'Hora', 'Fecha Aceptacion', 'Resolucion'];
+        const fileName = filterDocumentDate.value[0].identification_number + '_' + dateValue.value.startDate + '_' + dateValue.value.endDate + '.csv';
+        filterDocumentDate.value.forEach((element: any) => {
             const request = JSON.parse(element.request_api);
             exportData.push([element.prefix, element.number, element.cufe, request.date, request.time, element.date_issue, request.resolution_number]);
         });
         exportToCsv(fileName, headers, exportData);
     }
-  
+
 }
 //---------- variables computed---------------------
 
@@ -325,12 +328,12 @@ const filterDocumentDate: any = computed(() => {
 })
 
 
-watch(dateValue, (newX: any) => {
+watch(dateValue, () => {
     getDataLogin(firstPageLogin.value)
 })
 
 watch(varSelectedStatusDocument, () => {
-    selectedDocuments.value = []; 
+    selectedDocuments.value = [];
 })
 
 //---------- metodos---------------------
@@ -523,7 +526,7 @@ const openModalChangeDate: any = () => {
 const sendChangeDate: any = async () => {
     try {
 
-       let responseData = await axios.post('/api/ubl2.1/change-date', {
+        let responseData = await axios.post('/api/ubl2.1/change-date', {
             "password": userPassword.value,
         })
         notify(`<p style="font-size: 12px;" >${responseData.data.message}</p>`);
@@ -551,17 +554,19 @@ onMounted(async () => {
 
 
         <div class="flex items-center w-full gap-2 mt-1 ">
-            <vue-tailwind-datepicker :formatter="formatter" v-model="dateValue"
-                class="h-[38px] w-[250px] border border-gray-500 rounded-lg  placeholder-gray-600/70" />
-            <div class="w-2/12 max-w-md mx-auto">
+            <div class="w-1/5">
+                <vue-tailwind-datepicker :formatter="formatter" v-model="dateValue" class="h-[38px] border border-gray-500 rounded-lg  placeholder-gray-600/70" />
+            </div>
+            <div class=" max-w-md mx-auto">
                 <select @change="getDataLogin(firstPageLogin)" id="seleccionar"
-                    :class="{'block p-2 border border-gray-500 rounded-xl bg-green-700 text-white': varSelectedStatusDocument == 'ACEPTADA', 'block p-2 border border-gray-500 rounded-xl bg-red-700 text-white ': varSelectedStatusDocument == 'POR ENVIAR' }" v-model="varSelectedStatusDocument">
-                    <option value="ACEPTADA" class="text-white bg-green-700" >ACEPTADA</option>
+                    :class="{ 'block p-2 border border-gray-500 rounded-xl bg-green-700 text-white': varSelectedStatusDocument == 'ACEPTADA', 'block p-2 border border-gray-500 rounded-xl bg-red-700 text-white ': varSelectedStatusDocument == 'POR ENVIAR' }"
+                    v-model="varSelectedStatusDocument">
+                    <option value="ACEPTADA" class="text-white bg-green-700">ACEPTADA</option>
                     <option value="POR ENVIAR" class="text-white bg-red-700" selected>POR ENVIAR</option>
                     <option value=" " class="bg-white text-gray" placeholder="Estado"></option>
                 </select>
             </div>
-            <div class="relative flex items-center w-2/12 mt-1 md:mt-0">
+            <div class="relative flex items-center  mt-1 md:mt-0">
                 <span class="absolute">
 
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -574,7 +579,7 @@ onMounted(async () => {
                     v-model="varBuscadorCliente"
                     class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-600/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
-            <div class="relative flex items-center w-2/12">
+            <div class="relative flex items-center ">
                 <span class="absolute">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600">
@@ -586,7 +591,7 @@ onMounted(async () => {
                     v-model="varBuscadorPrefix"
                     class="block  py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-400/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
-            <div class="relative flex items-center w-2/12">
+            <div class="relative flex items-center ">
                 <span class="absolute">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600">
@@ -609,76 +614,70 @@ onMounted(async () => {
                         <div class="flex items-center w-full gap-2 mt-1 mb-2">
                             <div class="relative flex items-center w-2/12 mt-1 md:mt-0">
                                 <label>Total: $ {{ formatNumber(totalSelectedDocuments) }} {{ (selectedDocuments.length)
-                                    ? '(' + selectedDocuments.length + ')' : '' }}</label>
+                ? '(' + selectedDocuments.length + ')' : '' }}</label>
                             </div>
 
                             <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="selectedDocuments.length">
                                 <button @click="sendSelectedDocuments"
-                                    class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow group">
-                                    <div
-                                        class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
-                                    <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                    class="relative w-30 h-8 overflow-hidden text-xs  rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
+                                    <span class="relative flex gap-1 px-2 text-black  ">
                                         <img :src="SendInvoiceIon" class="w-4 h-4" />
-                                        <p class="self-center font-bold ">{{ statusSelectedDocuments ?
-                                            'Enviando...' : 'Enviar Seleccionados' }}</p>
+                                        <p class="self-center font-bold group-hover:text-white ">{{ statusSelectedDocuments ? 'Enviando...' : 'Enviar Seleccionados' }}</p>
                                     </span>
                                 </button>
 
 
                             </div>
 
-                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0" >
+                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0"
+                                v-if="selectedDocuments.length > 0">
                                 <button @click="downloadSelectedDocuemnts"
-                                    class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow group">
-                                    <div
-                                        class="absolute inset-0 w-3 bg-blue-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
-                                    <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                    class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow">
+                                    <span class="relative flex gap-1 px-2 text-black hover:text-white bg-[#2471A3] hover:bg-[#85C1E9]">
                                         <img :src="FilePdfIon" class="w-8 h-9" />
                                         <p class="self-center font-bold ">Descargar Seleccionados</p>
                                     </span>
                                 </button>
                             </div>
-                            
-                            <input type="file" ref="fileBulkInput" @change="handleFileChange" accept=".txt" v-if="varSelectedStatusDocument == 'POR ENVIAR'" >
 
+                            <div class="flex h-10 w-full min-w-[200px] max-w-[26rem] justify-between border border-solid rounded-lg border-[#979494]" v-if="varSelectedStatusDocument == 'POR ENVIAR'">
+                                <input id="file-upload" type="file" class="hidden" @change="handleFileChange"
+                                    accept=".txt" ref="fileBulkInput" />
+                                <label for="file-upload"
+                                    class="rounded bg-black max-h-[90%] h-[35px] ml-1 py-2 px-4 text-center align-middle font-sans text-xs font-bold capitalize text-white cursor-pointer hover:bg-[#cecece] flex self-center">
+                                    <p class="self-center">Importar archivo</p>
+                                </label>
+                                <label class="self-center  select-none text-[11px]  px-2 text-blue-600 font-bold">
+                                    {{ nameFile }}
+                                </label>
+                            </div>
                             <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="statuFileBulkInput">
-                               
                                 <button @click="uploadBulkFile"
-                                    class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow group">
-                                    <div
-                                        class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
+                                    class="relative w-30 h-8 overflow-hidden text-xs  rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
                                     <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
                                         <img :src="SendInvoiceIon" class="w-4 h-4" />
-                                        <p class="self-center font-bold ">{{ statuSendFileBulk ? 'Enviando Facturas ...' : 'Subir Archivo' }}</p>
+                                        <p class="self-center font-bold ">{{ statuSendFileBulk ? 'Enviando Facturas ...': 'Subir archivo a la base de datos' }}</p>
                                     </span>
                                 </button>
-                                
                             </div>
 
-                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0 ml-auto" v-if="varSelectedStatusDocument == 'ACEPTADA'" >
-                               
-                               <button @click="generateCsv" v-if="DataDocument?.length"
-                                   class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow group">
-                                   <div
-                                       class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
-                                   <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
-                                       <img :src="CSVFile" class="w-4 h-4" />
-                                       <p class="self-center font-bold ">Exportar</p>
-                                   </span>
-                               </button>
-                               
-                           </div>
+                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0 ml-auto" v-if="varSelectedStatusDocument == 'ACEPTADA'">
+                                <button @click="generateCsv" v-if="DataDocument?.length"
+                                    class="relative w-30 h-8 overflow-hidden text-xs  rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
+                                    <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                        <img :src="CSVFile" class="w-4 h-4" />
+                                        <p class="self-center font-bold ">Exportar</p>
+                                    </span>
+                                </button>
+                            </div>
 
-                           <div class="relative" v-if="varSelectedStatusDocument == 'POR ENVIAR' && selectedDocuments.length > 0" >
+                            <div class="relative"
+                                v-if="varSelectedStatusDocument == 'POR ENVIAR' && selectedDocuments.length > 0">
                                 <button @click.prevent="openModalChangeDate()"
-                                    class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow w-22 group">
-                                    <div
-                                        class="absolute inset-0 w-2 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full">
-                                    </div>
-                                    <span
-                                        class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                    class="relative h-6 overflow-hidden text-xs  rounded-lg shadow w-22 bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
+                                    <span class="relative flex gap-1 px-2 text-black font-bold">
                                         <img :src="calendarIon" class="w-5 h-5 " />
-                                        <p font-bold class="self-center "> Cambiar Fecha</p>
+                                        <p font-bold class="self-center group-hover:text-white"> Cambiar Fecha</p>
                                     </span>
                                 </button>
                             </div>
@@ -686,10 +685,7 @@ onMounted(async () => {
 
                         <table class="min-w-full divide-y divide-gray-200 ">
                             <thead class="bg-blue-700  text-[13px] ">
-                                <th ></th>
-                                <th scope="col" class="px-4 font-normal text-center text-gray-300 ">
-                                    <span>#</span>
-                                </th>
+                                <th></th>
                                 <th scope="col" class="flex gap-1 px-12 font-normal text-center text-white">
                                     <img :src="calendarIon" class="self-center w-6 h-6 " />
                                     Fecha Emision
@@ -700,10 +696,6 @@ onMounted(async () => {
                                 <th scope="col" class="px-12 font-normal text-center text-white ">
                                     Documento
                                 </th>
-                                <th scope="col" class="px-12 font-normal text-center text-white ">
-                                    Tipo
-                                </th>
-
                                 <th scope="col" class="px-4 font-normal text-center text-white ">
                                     Valor documento
                                 </th>
@@ -742,11 +734,6 @@ onMounted(async () => {
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-0 py-0 text-center whitespace-nowrap">
-                                        <div>
-                                            {{ document.id }}
-                                        </div>
-                                    </td>
                                     <td class="px-2 py-2 text-center whitespace-nowrap">
                                         <div class="flex gap-1">
 
@@ -763,23 +750,17 @@ onMounted(async () => {
                                     </td>
                                     <td class="px-4 py-2 text-center whitespace-nowrap">
                                         <div>
-                                            <p class="font-bold text-gray-900 ">{{ document.prefix }}{{ document.number
-                                                }}
-                                            </p>
-                                        </div>
-                                    </td>
-                                    <td class="px-4 py-2 text-center whitespace-nowrap">
-                                        <div>
                                             <p class="font-bold text-gray-900 ">
                                                 {{ document.type_document_id == 1 ? 'Factura venta nacional' :
-                                                    document.type_document_id == 2 ? 'Factura Exportacion' :
-                                                        document.type_document_id == 3 ? 'Factura contingencia' :
-                                                            document.type_document_id == 4 ? 'Nota credito' :
-                                                                document.type_document_id == 5 ? 'Nota debito' :
-                                                                    document.type_document_id == 11 ? 'Documento soporte' :
-                                                                        document.type_document_id == 12 ? 'Factura venta tipo-04' :
-                                                                            document.type_document_id == 13 ? 'Ajuste Documento soporte' :
-                                                                                '' }}
+                document.type_document_id == 2 ? 'Factura Exportacion' :
+                    document.type_document_id == 3 ? 'Factura contingencia' :
+                        document.type_document_id == 4 ? 'Nota credito' :
+                            document.type_document_id == 5 ? 'Nota debito' :
+                                document.type_document_id == 11 ? 'Documento soporte' :
+                                    document.type_document_id == 12 ? 'Factura venta tipo-04' :
+                                        document.type_document_id == 13 ? 'Ajuste Documento soporte' :
+                                            '' }} <br />
+                                                {{ document.prefix }}{{ document.number }}
                                             </p>
                                         </div>
                                     </td>
@@ -848,7 +829,7 @@ onMounted(async () => {
                                                         class="relative flex gap-1 px-2 text-black group-hover:text-white">
                                                         <img :src="SendInvoiceIon" class="w-4 h-4 " />
                                                         <p class="self-center font-bold ">{{ document.isSend == true ?
-                                                            'Enviando...' : 'Enviar' }}</p>
+                'Enviando...' : 'Enviar' }}</p>
                                                     </span>
                                                 </button>
                                             </div>
@@ -944,7 +925,8 @@ onMounted(async () => {
 
         <modalComponent :show="openmodalStatusChangeDate">
             <template #title>
-                <span class="absolute top-0 bottom-0 right-0 px-4 py-3 max-h-fit " @click="openmodalStatusChangeDate = false">
+                <span class="absolute top-0 bottom-0 right-0 px-4 py-3 max-h-fit "
+                    @click="openmodalStatusChangeDate = false">
                     <svg class="w-6 h-6 text-red-500 fill-current" role="button" xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20">
                         <title>Close</title>
@@ -957,8 +939,8 @@ onMounted(async () => {
             <template #content>
                 <div>
                     <label class="block mb-2 font-bold" for="correo">Contraseña:</label>
-                    <input class="w-full px-3 py-2 border rounded" placeholder="Contraseña de inicio de sesión" type="password"
-                        id="user_password" v-model="userPassword">
+                    <input class="w-full px-3 py-2 border rounded" placeholder="Contraseña de inicio de sesión"
+                        type="password" id="user_password" v-model="userPassword">
                 </div>
             </template>
 

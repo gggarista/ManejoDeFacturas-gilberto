@@ -617,7 +617,7 @@ onMounted(async () => {
                 ? '(' + selectedDocuments.length + ')' : '' }}</label>
                             </div>
 
-                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="selectedDocuments.length">
+                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="selectedDocuments.length &&  varSelectedStatusDocument == 'POR ENVIAR'">
                                 <button @click="sendSelectedDocuments"
                                     class="relative w-30 h-8 overflow-hidden text-xs  rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
                                     <span class="relative flex gap-1 px-2 text-black  ">

@@ -554,9 +554,9 @@ onMounted(async () => {
                 class="h-[38px] w-[250px] border border-gray-500 rounded-lg  placeholder-gray-600/70" />
             <div class="w-2/12 max-w-md mx-auto">
                 <select @change="getDataLogin(firstPageLogin)" id="seleccionar"
-                    class="block p-2 border border-gray-500 rounded-lg" v-model="varSelectedStatusDocument">
-                    <option value="ACEPTADA" class="text-white bg-green-700" selected>ACEPTADA</option>
-                    <option value="POR ENVIAR" class="text-white bg-red-700">POR ENVIAR</option>
+                    :class="{'block p-2 border border-gray-500 rounded-xl bg-green-700 text-white': varSelectedStatusDocument == 'ACEPTADA', 'block p-2 border border-gray-500 rounded-xl bg-red-700 text-white ': varSelectedStatusDocument == 'POR ENVIAR' }" v-model="varSelectedStatusDocument">
+                    <option value="ACEPTADA" class="text-white bg-green-700" >ACEPTADA</option>
+                    <option value="POR ENVIAR" class="text-white bg-red-700" selected>POR ENVIAR</option>
                     <option value=" " class="bg-white text-gray" placeholder="Estado"></option>
                 </select>
             </div>

@@ -611,12 +611,11 @@ onMounted(async () => {
         <div class="flex flex-col mt-2">
             <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-                    <div class="overflow-hidden border border-gray-200 md:rounded-lg">
+                    <div class="overflow-hidden border border-gray-200 md:rounded-lg">    
 
-                        <div class="flex items-center w-full gap-2 mt-1 mb-2">
+                        <div :class="{'flex w-full gap-2 mt-1 mb-2':varSelectedStatusDocument == 'POR ENVIAR', 'flex w-full gap-2 mt-1 mb-2 justify-between': varSelectedStatusDocument == 'ACEPTADA' }">
                             <div class="relative flex items-center w-2/12 mt-1 md:mt-0">
-                                <label>Total: $ {{ formatNumber(totalSelectedDocuments) }} {{ (selectedDocuments.length)
-                ? '(' + selectedDocuments.length + ')' : '' }}</label>
+                                <label>Total: $ {{ formatNumber(totalSelectedDocuments) }} {{ (selectedDocuments.length) ? '(' + selectedDocuments.length + ')' : '' }}</label>
                             </div>
 
                             <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="selectedDocuments.length &&  varSelectedStatusDocument == 'POR ENVIAR'">
@@ -627,19 +626,29 @@ onMounted(async () => {
                                         <p class="self-center font-bold text-white group-hover:text-white ">{{ statusSelectedDocuments ? 'Enviando...' : 'Enviar Seleccionados' }}</p>
                                     </span>
                                 </button>
-
-
                             </div>
 
-                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0"
-                                v-if="selectedDocuments.length > 0">
-                                <button @click="downloadSelectedDocuemnts"
-                                    class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow">
-                                    <span class="relative flex gap-1 px-2 text-white hover:text-white bg-[#2471A3] hover:bg-[#85C1E9]">
-                                        <img :src="FilePdfIon" class="w-8 h-9" />
-                                        <p class="self-center font-bold ">Descargar Seleccionados</p>
-                                    </span>
-                                </button>
+                                
+                            <div class=" flex  gap-2 mx-2" >
+                                <div class="flex " v-if="selectedDocuments.length > 0">
+                                    <button @click="downloadSelectedDocuemnts"
+                                        class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow">
+                                        <span class="relative flex gap-1 px-2 text-white hover:text-white bg-[#2471A3] hover:bg-[#85C1E9]">
+                                            <img :src="FilePdfIon" class="w-8 h-9" />
+                                            <p class="self-center font-bold ">Descargar Seleccionados</p>
+                                        </span>
+                                    </button>
+                                </div>
+
+                                <div class="relative flex " v-if="varSelectedStatusDocument == 'ACEPTADA'">
+                                    <button @click="generateCsv" v-if="DataDocument?.length"
+                                        class="relative w-30 h-8 overflow-hidden text-xs  rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
+                                        <span class="relative flex gap-1 px-2 text-white group-hover:text-white">
+                                            <img :src="CSVFile" class="w-4 h-4" />
+                                            <p class="self-center font-bold ">Exportar</p>
+                                        </span>
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="flex h-10 w-full min-w-[200px] max-w-[26rem] justify-between border border-solid rounded-lg border-[#979494]" v-if="varSelectedStatusDocument == 'POR ENVIAR'">
@@ -664,15 +673,6 @@ onMounted(async () => {
                                 </button>
                             </div>
 
-                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0 ml-auto" v-if="varSelectedStatusDocument == 'ACEPTADA'">
-                                <button @click="generateCsv" v-if="DataDocument?.length"
-                                    class="relative w-30 h-8 overflow-hidden text-xs  rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
-                                    <span class="relative flex gap-1 px-2 text-white group-hover:text-white">
-                                        <img :src="CSVFile" class="w-4 h-4" />
-                                        <p class="self-center font-bold ">Exportar</p>
-                                    </span>
-                                </button>
-                            </div>
 
                             <div class="relative"
                                 v-if="varSelectedStatusDocument == 'POR ENVIAR' && selectedDocuments.length > 0">
@@ -925,7 +925,6 @@ onMounted(async () => {
                 </DangerButtonComponent>
             </template>
         </modalComponent>
-
         <modalComponent :show="openmodalStatusChangeDate">
             <template #title>
                 <span class="absolute top-0 bottom-0 right-0 px-4 py-3 max-h-fit "

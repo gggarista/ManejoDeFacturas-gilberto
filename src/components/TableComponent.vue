@@ -110,7 +110,7 @@ const downloadSelectedDocuemnts = async () => {
 
         const documentUrls: any[] = [];
         selectedDocuments.value.map((pdf: any) => {
-            documentUrls.push(`${apiUrl}/api/download/${pdf.identification_number}/${pdf.pdf}`);
+            documentUrls.push(`${apiUrl}/api/download/${pdf.company_identification_number}/${pdf.pdf}`);
         });
 
         // Recorrer todas las URLs y descargar los documentos
@@ -246,7 +246,7 @@ const generateCsv = () => {
     var exportData: any[] = [];
     if (filterDocumentDate.value.length > 0) {
         var headers = ['Prefijo', 'Numero', 'Cufe', 'Fecha', 'Hora', 'Fecha Aceptacion', 'Resolucion'];
-        const fileName = filterDocumentDate.value[0].identification_number + '_' + dateValue.value.startDate + '_' + dateValue.value.endDate + '.csv';
+        const fileName = filterDocumentDate.value[0].company_identification_number + '_' + dateValue.value.startDate + '_' + dateValue.value.endDate + '.csv';
         filterDocumentDate.value.forEach((element: any) => {
             const request = JSON.parse(element.request_api);
             exportData.push([element.prefix, element.number, element.cufe, request.date, request.time, element.date_issue, request.resolution_number]);
@@ -449,7 +449,7 @@ const SendMail: any = async () => {
 
 const openModalSendEmail: any = (data: any) => {
 
-    modelSendEmail.value.company_idnumber = data.identification_number
+    modelSendEmail.value.company_idnumber = data.company_identification_number
     modelSendEmail.value.prefix = data.prefix
     modelSendEmail.value.number = data.number
 
@@ -777,11 +777,11 @@ onMounted(async () => {
                                     </td>
                                     <td class="px-2 py-2 text-center whitespace-nowrap">
                                         <div class="flex gap-1">
-                                            <a :href="`${apiUrl}/api/download/${document.identification_number}/${document.pdf}`"
+                                            <a :href="`${apiUrl}/api/download/${document.company_identification_number}/${document.pdf}`"
                                                 target="__blank">
                                                 <img :src="FilePdfIon" class="w-8 h-9" />
                                             </a>
-                                            <a :href="`${apiUrl}/api/download/${document.identification_number}/${document.xml}`"
+                                            <a :href="`${apiUrl}/api/download/${document.company_identification_number}/${document.xml}`"
                                                 target="__blank">
 
                                                 <img :src="FileXmlIon" class="w-8 h-9" />

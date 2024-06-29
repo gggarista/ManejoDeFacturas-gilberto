@@ -509,18 +509,30 @@ const notify: any = (message: any) => {
 
 const openModalChangeDate: any = () => {
 
-    openmodalStatusChangeDate.value = true
+    openmodalStatusChangeDate.value = true;
 }
 
 const sendChangeDate: any = async () => {
     try {
 
+        const documentsId: any[] = [];
+        selectedDocuments.value.map((doc: any) => {
+            documentsId.push(doc.id);
+        });
+
         let responseData = await axios.post('/api/ubl2.1/change-date', {
             "password": userPassword.value,
+            "documents_id": JSON.stringify(documentsId)
         })
         notify(`<p style="font-size: 12px;" >${responseData.data.message}</p>`);
         openmodalStatusChangeDate.value = false;
         userPassword.value = '';
+        setTimeout(() => {
+            if(responseData.data.success){
+                location.reload();
+            }
+        }, 1500);
+       
     } catch (error) {
         console.log(error)
     }
@@ -730,7 +742,7 @@ onMounted(async () => {
 
                                             <div
                                                 class="self-center px-1 py-1 font-bold text-blue-900 bg-blue-100 rounded">
-                                                {{ document.created_at }}</div>
+                                                {{ document.date_issue }}</div>
                                         </div>
                                     </td>
                                     <td class="px-4 py-2 text-center whitespace-nowrap">

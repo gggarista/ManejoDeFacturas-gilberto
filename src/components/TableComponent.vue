@@ -632,7 +632,7 @@ onMounted(async () => {
                             <div class=" flex  gap-2 mx-2" >
                                 <div class="flex " v-if="selectedDocuments.length > 0">
                                     <button @click="downloadSelectedDocuemnts"
-                                        class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow">
+                                        class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow mt-1">
                                         <span class="relative flex gap-1 px-2 text-white hover:text-white bg-[#2471A3] hover:bg-[#85C1E9]">
                                             <img :src="FilePdfIon" class="w-8 h-9" />
                                             <p class="self-center font-bold ">Descargar Seleccionados</p>

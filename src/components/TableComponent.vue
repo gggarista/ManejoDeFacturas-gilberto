@@ -4,6 +4,7 @@ import { Ref, ref, onMounted, computed, watch } from "vue";
 import calendarIon from '../assets/calendar.svg'
 import FilePdfIon from '../assets/pdf-svgrepo-com.svg'
 import FileXmlIon from '../assets/xml-svgrepo-com.svg'
+import FileJsonIon from '../assets/json-file-svgrepo-com.svg'
 //import FileZipIon from '../assets/zip-svgrepo-com.svg'
 import modalComponent from './dialogModal.vue'
 import DangerButtonComponent from './Dangerbutton.vue'
@@ -44,7 +45,7 @@ const modelSendEmail: Ref<{ company_idnumber: String, prefix: String, number: St
 })
 const OpcionesPaginas: any = ref([])
 const paginaSelected: Ref<String> = ref(`${axios.defaults.baseURL}/login-manejo-factura?page=1`)
-const itemPerPageSelected: Ref<String> = ref('1000')
+const itemPerPageSelected: Ref<String> = ref('14')
 const varitemPerPage: Ref<Array<String>> = ref(["5", "10", "14", "25", "50", "100", "1000"])
 const varSelectedStatusDocument: Ref<String> = ref("POR ENVIAR")
 const secretKey: Ref<any> = ref('arista') // Cambia esto por tu clave secreta
@@ -255,6 +256,19 @@ const generateCsv = () => {
     }
 
 }
+
+const downloadJsonFile = (doc:any) => {
+ 
+      const blob: Blob = new Blob([doc.request_api], { type: 'text/plain' });
+      const url: string = URL.createObjectURL(blob);
+      const linkElement: HTMLAnchorElement = document.createElement('a');
+      linkElement.href = url;
+      linkElement.download = doc.prefix+''+doc.number+'.txt';
+      document.body.appendChild(linkElement);
+      linkElement.click();
+      document.body.removeChild(linkElement);
+      URL.revokeObjectURL(url);
+  }
 //---------- variables computed---------------------
 
 /**
@@ -551,88 +565,72 @@ onMounted(async () => {
 </script>
 
 <template>
-    <section class="container px-0 mx-auto">
+    <section class="container px-4 mx-auto">
         <!-- cabecera -->
-
-
-        <div class="flex items-center w-full gap-2 mt-1 ">
-            <div class=" max-w-md ">
+        <div class="flex flex-col md:flex-row items-center w-full gap-2 mt-1 ">
+            <div class="w-full md:w-1/5">
                 <select @change="getDataLogin(firstPageLogin)" id="seleccionar"
-                    :class="{ 'block p-2 border border-gray-500 rounded-xl bg-green-700 text-white': varSelectedStatusDocument == 'ACEPTADA', 'block p-2 border border-gray-500 rounded-xl bg-red-700 text-white ': varSelectedStatusDocument == 'POR ENVIAR' }"
+                    :class="{ 'block w-full p-2 border border-gray-500 rounded-xl bg-green-700 text-white': varSelectedStatusDocument == 'ACEPTADA', 'block w-full p-2 border border-gray-500 rounded-xl bg-red-700 text-white ': varSelectedStatusDocument == 'POR ENVIAR' }"
                     v-model="varSelectedStatusDocument">
                     <option value="ACEPTADA" class="text-white bg-green-700">ACEPTADA</option>
                     <option value="POR ENVIAR" class="text-white bg-red-700" selected>POR ENVIAR</option>
                     <option value=" " class="bg-white text-gray" placeholder="Estado"></option>
                 </select>
             </div>
-            <div class="w-1/5">
-                <vue-tailwind-datepicker :formatter="formatter" v-model="dateValue" class="h-[38px] border border-gray-500 rounded-lg  placeholder-gray-600/70" />
+            <div class="w-full md:w-1/5">
+                <vue-tailwind-datepicker :formatter="formatter" v-model="dateValue" class="w-full h-[38px] border border-gray-500 rounded-lg placeholder-gray-600/70" />
             </div>
-            <div class="relative flex items-center  mt-1 md:mt-0">
-                <span class="absolute">
-
+            <div class="relative flex items-center w-full md:w-auto mt-1 md:mt-0">
+                <span class="absolute left-3">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600">
+                        stroke="currentColor" class="w-5 h-5 text-gray-400 dark:text-gray-600">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                     </svg>
                 </span>
                 <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por Cliente"
                     v-model="varBuscadorCliente"
-                    class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-600/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
+                    class="block w-full py-1.5 pr-5 pl-10 text-gray-700 bg-white border border-gray-500 rounded-lg placeholder-gray-600/70 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
-            <!-- <div class="relative flex items-center ">
-                <span class="absolute">
+            <div class="relative flex items-center w-full md:w-auto mt-1 md:mt-0">
+                <span class="absolute left-3">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                    </svg>
-                </span>
-                <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por prefijo"
-                    v-model="varBuscadorPrefix"
-                    class="block  py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-400/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
-            </div> -->
-            <div class="relative flex items-center ">
-                <span class="absolute">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600">
+                        stroke="currentColor" class="w-5 h-5 text-gray-400 dark:text-gray-600">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                     </svg>
                 </span>
                 <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por documento"
                     v-model="varBuscadorNormal"
-                    class="block py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-400/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
+                    class="block w-full py-1.5 pr-5 pl-10 text-gray-700 bg-white border border-gray-500 rounded-lg placeholder-gray-400/70 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
-
         </div>
+
         <!-- body -->
         <div class="flex flex-col mt-2">
             <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
                     <div class="overflow-hidden border border-gray-200 md:rounded-lg">    
 
-                        <div :class="{'flex w-full gap-2 mt-1 mb-2':varSelectedStatusDocument == 'POR ENVIAR', 'flex w-full gap-2 mt-1 mb-2 justify-between': varSelectedStatusDocument == 'ACEPTADA' }">
-                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0">
+                        <div :class="{'flex flex-wrap w-full gap-2 mt-1 mb-2':varSelectedStatusDocument == 'POR ENVIAR', 'flex flex-wrap w-full gap-2 mt-1 mb-2 justify-between': varSelectedStatusDocument == 'ACEPTADA' }">
+                            <div class="relative flex items-center w-full md:w-2/12 mt-1 md:mt-0">
                                 <label>Total: $ {{ formatNumber(totalSelectedDocuments) }} {{ (selectedDocuments.length) ? '(' + selectedDocuments.length + ')' : '' }}</label>
                             </div>
 
-                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="selectedDocuments.length &&  varSelectedStatusDocument == 'POR ENVIAR'">
+                            <div class="relative flex items-center w-full md:w-2/12 mt-1 md:mt-0" v-if="selectedDocuments.length &&  varSelectedStatusDocument == 'POR ENVIAR'">
                                 <button @click="sendSelectedDocuments"
-                                    class="relative w-30 h-10 overflow-hidden text-xs  rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
-                                    <span class="relative flex gap-1 px-2 text-black  ">
+                                    class="relative w-full md:w-30 h-10 overflow-hidden text-xs rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
+                                    <span class="relative flex gap-1 px-2 text-black">
                                         <img :src="SendInvoiceIon" class="w-4 h-4 self-center" />
-                                        <p class="self-center font-bold text-white group-hover:text-white ">{{ statusSelectedDocuments ? 'Enviando...' : 'Enviar Seleccionados' }}</p>
+                                        <p class="self-center font-bold text-white group-hover:text-white">{{ statusSelectedDocuments ? 'Enviando...' : 'Enviar Seleccionados' }}</p>
                                     </span>
                                 </button>
                             </div>
 
-                                
-                            <div class=" flex  gap-2 mx-2" >
-                                <div class="relative" v-if="selectedDocuments.length > 0">
+                           
+                                <div class="relative flex items-center w-full md:w-2/12 mt-1 md:mt-0" v-if="selectedDocuments.length > 0">
                                     <button @click="downloadSelectedDocuemnts"
-                                        class="relative  overflow-hidden text-xs  rounded-lg shadow w-22 bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group  h-10">
+                                        class="relative overflow-hidden text-xs rounded-lg shadow w-full md:w-22 bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group h-10">
                                         <span class="relative flex gap-1 px-2 text-white font-bold">
                                             <img :src="FilePdfIon" class="w-6 h-6 self-center" />
                                             <p font-bold class="self-center group-hover:text-white">Descargar Seleccionados</p>
@@ -640,96 +638,88 @@ onMounted(async () => {
                                     </button>
                                 </div>
 
-                                <div class="relative flex " v-if="varSelectedStatusDocument == 'ACEPTADA'">
+                                <div class="relative flex items-center w-full md:w-2/12 mt-1 md:mt-0" v-if="varSelectedStatusDocument == 'ACEPTADA'">
                                     <button @click="generateCsv" v-if="DataDocument?.length"
-                                        class="relative w-30 h-10 overflow-hidden text-xs  rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
+                                        class="relative w-full md:w-30 h-10 overflow-hidden text-xs rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
                                         <span class="relative flex gap-1 px-2 text-white group-hover:text-white">
                                             <img :src="CSVFile" class="w-4 h-4" />
-                                            <p class="self-center font-bold ">Exportar</p>
+                                            <p class="self-center font-bold">Exportar</p>
                                         </span>
                                     </button>
                                 </div>
-                            </div>
+                            
 
-                            <div class="flex h-10 w-full min-w-[200px] max-w-[26rem] justify-between border border-solid rounded-lg border-[#979494]" v-if="varSelectedStatusDocument == 'POR ENVIAR'">
+                            <div class="flex w-full md:w-auto min-w-[200px] max-w-[26rem] justify-between border border-solid rounded-lg border-[#979494]" v-if="varSelectedStatusDocument == 'POR ENVIAR'">
                                 <input id="file-upload" type="file" class="hidden" @change="handleFileChange"
                                     accept=".txt" ref="fileBulkInput" />
                                 <label for="file-upload"
                                     class="rounded bg-black max-h-[90%] h-[35px] ml-1 py-2 px-4 text-center align-middle font-sans text-xs font-bold capitalize text-white cursor-pointer hover:bg-[#cecece] flex self-center">
                                     <p class="self-center">Importar archivo</p>
                                 </label>
-                                <label class="self-center  select-none text-[11px]  px-2 text-blue-600 font-bold">
+                                <label class="self-center select-none text-[11px] px-2 text-blue-600 font-bold">
                                     {{ nameFile }}
                                 </label>
                             </div>
 
-                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="statuFileBulkInput">
+                            <div class="relative flex items-center w-full md:w-2/12 mt-1 md:mt-0" v-if="statuFileBulkInput">
                                 <button @click="uploadBulkFile"
-                                    class="relative w-30 h-8 overflow-hidden text-xs  rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
+                                    class="relative w-full md:w-30 h-10 overflow-hidden text-xs rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
                                     <span class="relative flex gap-1 px-2 text-white group-hover:text-white">
                                         <img :src="SendInvoiceIon" class="w-4 h-4 self-center" />
-                                        <p class="self-center font-bold ">{{ statuSendFileBulk ? 'Enviando Facturas ...': 'Subir archivo a la base de datos' }}</p>
+                                        <p class="self-center font-bold">{{ statuSendFileBulk ? 'Enviando Facturas ...': 'Subir archivo a la base de datos' }}</p>
                                     </span>
                                 </button>
                             </div>
 
-
-                            <div class="relative"
-                                v-if="varSelectedStatusDocument == 'POR ENVIAR' && selectedDocuments.length > 0">
+                            <div class="relative w-full md:w-auto" v-if="varSelectedStatusDocument == 'POR ENVIAR' && selectedDocuments.length > 0">
                                 <button @click.prevent="openModalChangeDate()"
-                                    class="relative  overflow-hidden text-xs  rounded-lg shadow w-22 bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group mt-1 h-10">
+                                    class="relative overflow-hidden text-xs rounded-lg shadow w-full md:w-22 bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group mt-1 h-10">
                                     <span class="relative flex gap-1 px-2 text-white font-bold">
-                                        <img :src="calendarIon" class="w-5 h-5  self-center" />
-                                        <p font-bold class="self-center group-hover:text-white"> Cambiar Fecha</p>
+                                        <img :src="calendarIon" class="w-5 h-5 self-center" />
+                                        <p font-bold class="self-center group-hover:text-white">Cambiar Fecha</p>
                                     </span>
                                 </button>
                             </div>
                         </div>
 
                         <table class="min-w-full divide-y divide-gray-200 ">
-                            <thead class="bg-blue-700  text-[13px] ">
-                                <th></th>
-                                <th scope="col" class="flex gap-1 px-12 font-normal text-center text-white">
-                                    <img :src="calendarIon" class="self-center w-6 h-6 " />
-                                    Fecha Emision
-                                </th>
-                                <th scope="col" class="px-12 font-normal text-center text-white ">
-                                    Cliente
-                                </th>
-                                <th scope="col" class="px-12 font-normal text-center text-white ">
-                                    Documento
-                                </th>
-                                <th scope="col" class="px-4 font-normal text-center text-white ">
-                                    Valor documento
-                                </th>
-                                <th scope="col" class="px-4 font-normal text-center text-white ">
-                                    Descargas
-                                </th>
-                                <th scope="col" class="px-4 font-normal text-center text-white ">
-                                    Acciones
-                                </th>
-                                <th scope="col" class="px-12 font-normal text-center text-white ">
-                                    Estado
-                                </th>
-
-
+                            <thead class="bg-blue-700 text-[13px]">
+                                <tr>
+                                    <th></th>
+                                    <th scope="col" class="px-2 py-2 text-left whitespace-nowrap text-white">
+                                        <div class="flex gap-1 justify-left">
+                                            <img :src="calendarIon" class="self-left w-6 h-6" />
+                                            Fecha Emision
+                                        </div>
+                                    </th>
+                                    <th scope="col" class="px-12 py-3 font-normal text-center text-white">
+                                        Cliente
+                                    </th>
+                                    <th scope="col" class="px-12 py-3 font-normal text-center text-white">
+                                        Documento
+                                    </th>
+                                    <th scope="col" class="px-4 py-3 font-normal text-center text-white">
+                                        Valor documento
+                                    </th>
+                                    <th scope="col" class="px-4 py-3 font-normal text-center text-white">
+                                        Descargas
+                                    </th>
+                                    <th scope="col" class="px-4 py-3 font-normal text-center text-white">
+                                        Acciones
+                                    </th>
+                                    <th scope="col" class="px-12 py-3 font-normal text-center text-white">
+                                        Estado
+                                    </th>
+                                </tr>
                             </thead>
-                            <tbody class="bg-white divide-gray-200 text-[10px]">
+                            <tbody class="bg-white divide-y divide-gray-200 text-[10px]">
                                 <tr v-for="(document, d) in filterDocumentDate" :key="d" class="hover:bg-[#f3b8b0eb]">
-                                    <td>
+                                    <td class="px-2 py-2 whitespace-nowrap">
                                         <div class="ml-1">
-                                            <div
-                                                class="relative flex items-center justify-center flex-shrink-0 w-3 h-3 bg-gray-200 rounded-sm">
-                                                <!--input placeholder="checkbox" type="checkbox"
-                                                    class="absolute w-full h-full opacity-0 cursor-pointer focus:opacity-100 checkbox" /-->
-                                                <input type="checkbox" class="checkbox"
-                                                    @change="toggleSelectedDocuments(document)"
-                                                    ref="checkboxSelectedDocuments"> 
+                                            <div class="relative flex items-left justify-center flex-shrink-0 w-3 h-3 bg-gray-200 rounded-sm">
+                                                <input type="checkbox" class="checkbox" @change="toggleSelectedDocuments(document)" ref="checkboxSelectedDocuments"> 
                                                 <div class="hidden text-white bg-indigo-700 rounded-sm check-icon">
-                                                    <svg class="icon icon-tabler icon-tabler-check"
-                                                        xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                        fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <svg class="icon icon-tabler icon-tabler-check" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                                         <path stroke="none" d="M0 0h24v24H0z"></path>
                                                         <path d="M5 12l5 5l10 -10"></path>
                                                     </svg>
@@ -737,24 +727,22 @@ onMounted(async () => {
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-2 py-2 text-center whitespace-nowrap">
-                                        <div class="flex gap-1">
-
-                                            <div
-                                                class="self-center px-1 py-1 font-bold text-blue-900 bg-blue-100 rounded">
-                                                {{ document.date_issue }}</div>
+                                    <td class="px-2 py-2 text-left whitespace-nowrap">
+                                        <div class="flex gap-1 justify-left">
+                                            <div class="self-left px-1 py-1 font-bold text-blue-900 bg-blue-100 rounded">
+                                                {{ document.date_issue }}
+                                            </div>
                                         </div>
                                     </td>
                                     <td class="px-4 py-2 text-center whitespace-nowrap">
                                         <div>
                                             <h4 class="font-bold text-black">{{ JSON.parse(document.client).name }}</h4>
-                                            <p class="font-bold text-gray-900 ">{{ document.customer }}</p>
+                                            <p class="font-bold text-gray-900">{{ document.customer }}</p>
                                         </div>
                                     </td>
                                     <td class="px-4 py-2 text-center whitespace-nowrap">
                                         <div>
-                                            <p class="font-bold text-gray-900 ">
-                                                
+                                            <p class="font-bold text-gray-900">
                                                 {{ document.prefix }}{{ document.number }}<br />
                                                 {{ document.type_document_id == 1 ? 'Factura venta nacional' :
                 document.type_document_id == 2 ? 'Factura Exportacion' :
@@ -770,53 +758,43 @@ onMounted(async () => {
                                     </td>
                                     <td class="px-4 py-2 text-center whitespace-nowrap">
                                         <div>
-                                            <h4 class="text-black text-[14px] ">
+                                            <h4 class="text-black text-[14px]">
                                                 $ {{ formatNumber(document.total) }}
                                             </h4>
                                         </div>
                                     </td>
                                     <td class="px-2 py-2 text-center whitespace-nowrap">
-                                        <div class="flex gap-1">
+                                        <div class="flex gap-1 justify-center">
                                             <a :href="`${apiUrl}/api/download/${document.company_identification_number}/${document.pdf}`"
                                                 target="__blank">
                                                 <img :src="FilePdfIon" class="w-8 h-9" />
                                             </a>
                                             <a :href="`${apiUrl}/api/download/${document.company_identification_number}/${document.xml}`"
                                                 target="__blank">
-
                                                 <img :src="FileXmlIon" class="w-8 h-9" />
                                             </a>
+                                            <button @click="downloadJsonFile(document)"><img :src="FileJsonIon" class="w-8 h-9" /></button>
                                         </div>
                                     </td>
                                     <td class="px-1 py-2 text-center whitespace-nowrap">
                                         <div class="relative">
                                             <button @click.prevent="openModalSendEmail(document)"
                                                 class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow w-22 group">
-                                                <div
-                                                    class="absolute inset-0 w-2 bg-orange-400 transition-all duration-[250ms] ease-out group-hover:w-full">
+                                                <div class="absolute inset-0 w-2 bg-orange-400 transition-all duration-[250ms] ease-out group-hover:w-full">
                                                 </div>
-                                                <span
-                                                    class="relative flex gap-1 px-2 text-black group-hover:text-white">
-                                                    <img :src="sendMailIon" class="w-5 h-5 " />
-                                                    <p font-bold class="self-center "> Correo</p>
+                                                <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                                    <img :src="sendMailIon" class="w-5 h-5">
+                                                    <p font-bold class="self-center">Correo</p>
                                                 </span>
                                             </button>
                                         </div>
                                     </td>
-
                                     <td class="px-1 py-2 text-center whitespace-nowrap">
                                         <div v-if="document.state_document_id == 1"
                                             :class="{ 'flex justify-center gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-emerald-100/60 w-fit': document.state_document_id == 1, 'flex gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-red-100/60 w-fit': document.state_document_id == 0 }">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                                viewBox="0 0 20 20" fill="#02B126">
-                                                <path
-                                                    d="M9.16667 2.5L16.6667 10C17.0911 10.4745 17.0911 11.1922 16.6667 11.6667L11.6667 16.6667C11.1922 17.0911 10.4745 17.0911 10 16.6667L2.5 9.16667V5.83333C2.5 3.99238 3.99238 2.5 5.83333 2.5H9.16667"
-                                                    stroke="#52525B" stroke-width="1.25" stroke-linecap="round"
-                                                    stroke-linejoin="round">
-                                                </path>
-                                                <circle cx="7.50004" cy="7.49967" r="1.66667" stroke="#52525B"
-                                                    stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
-                                                </circle>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="#02B126">
+                                                <path d="M9.16667 2.5L16.6667 10C17.0911 10.4745 17.0911 11.1922 16.6667 11.6667L11.6667 16.6667C11.1922 17.0911 10.4745 17.0911 10 16.6667L2.5 9.16667V5.83333C2.5 3.99238 3.99238 2.5 5.83333 2.5H9.16667" stroke="#52525B" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></path>
+                                                <circle cx="7.50004" cy="7.49967" r="1.66667" stroke="#52525B" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></circle>
                                             </svg>
                                             <p class="text-white bg-green-700 w-fit h-fit py-[2px] px-[6px] rounded-lg">
                                                 ACEPTADA
@@ -824,16 +802,12 @@ onMounted(async () => {
                                         </div>
                                         <div v-else class="px-1 py-2 text-center whitespace-nowrap">
                                             <div class="relative">
-                                                <button
-                                                    @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)"
+                                                <button @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)"
                                                     class="relative w-24 h-6 overflow-hidden text-xs bg-white rounded-lg shadow group">
-                                                    <div
-                                                        class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
-                                                    <span
-                                                        class="relative flex gap-1 px-2 text-black group-hover:text-white">
-                                                        <img :src="SendInvoiceIon" class="w-4 h-4 " />
-                                                        <p class="self-center font-bold ">{{ document.isSend == true ?
-                'Enviando...' : 'Enviar' }}</p>
+                                                    <div class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
+                                                    <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                                        <img :src="SendInvoiceIon" class="w-4 h-4" />
+                                                        <p class="self-center font-bold">{{ document.isSend == true ? 'Enviando...' : 'Enviar' }}</p>
                                                     </span>
                                                 </button>
                                             </div>
@@ -847,13 +821,13 @@ onMounted(async () => {
             </div>
         </div>
         <!-- footer -->
-        <div class="mt-2 sm:flex sm:items-center sm:justify-between ">
-            <div class="text-sm text-gray-500 ">
-                Reg-<span class="font-medium text-gray-700 ">{{ pagination.from }} al {{ pagination.to }}</span>
+        <div class="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div class="text-sm text-gray-500">
+                Reg-<span class="font-medium text-gray-700">{{ pagination.from }} al {{ pagination.to }}</span>
             </div>
-            <div class="w-3/12 max-w-md mx-auto" style="display:flex">
-                <label style="padding-top: 10px;">RegxPág: </label>
-                <select id="seleccionar" class="block p-2 border border-gray-500 rounded-lg"
+            <div class="w-full sm:w-3/12 max-w-md mx-auto flex items-center">
+                <label class="mr-2">RegxPág:</label>
+                <select id="seleccionar" class="block w-full p-2 border border-gray-500 rounded-lg"
                     @change="getDataLogin(firstPageLogin)" v-model="itemPerPageSelected">
                     <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in varitemPerPage"
                         :key="p">
@@ -861,8 +835,8 @@ onMounted(async () => {
                     </option>
                 </select>
             </div>
-            <div class="max-w-md mx-auto w-/12">
-                <select id="seleccionar" class="block p-2 border border-gray-500 rounded-lg"
+            <div class="w-full sm:w-auto max-w-md mx-auto">
+                <select id="seleccionar" class="block w-full p-2 border border-gray-500 rounded-lg"
                     @change="getDataLogin(paginaSelected)" v-model="paginaSelected">
                     <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in OpcionesPaginas"
                         :key="p">
@@ -870,12 +844,11 @@ onMounted(async () => {
                     </option>
                 </select>
             </div>
-
-            <div class="flex items-center mt-4 gap-x-4 sm:mt-0">
+            <div class="flex items-center mt-4 gap-x-4 sm:mt-0 w-full sm:w-auto">
                 <button @click.prevent="getDataLogin(pagination.prev_page_url)"
                     :disabled="pagination.prev_page_url == null"
-                    class="flex items-center justify-center w-1/2 px-5 py-2 text-sm capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
-                    <span class="bg-blue-400 text-white border border-gray-500 rounded-lg w-40 hover:bg-gray-500">
+                    class="flex items-center justify-center w-full sm:w-auto px-5 py-2 text-sm capitalize transition-colors duration-200 bg-white border rounded-md gap-x-2 hover:bg-gray-100">
+                    <span class="bg-blue-400 text-white border border-gray-500 rounded-lg px-4 py-2 hover:bg-gray-500">
                         Pag.Anterior
                     </span>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -887,31 +860,28 @@ onMounted(async () => {
 
                 <button @click.prevent="getDataLogin(pagination.next_page_url)"
                     :disabled="pagination.next_page_url == null"
-                    class="flex items-center justify-center w-1/2 px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md sm:w-auto gap-x-2 hover:bg-gray-100 ">
+                    class="flex items-center justify-center w-full sm:w-auto px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md gap-x-2 hover:bg-gray-100">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
                     </svg>
-                    <span class="bg-blue-400 text-white border border-gray-500 rounded-lg w-40  hover:bg-gray-500">
+                    <span class="bg-blue-400 text-white border border-gray-500 rounded-lg px-4 py-2 hover:bg-gray-500">
                         Pag.Siguiente
                     </span>
-
                 </button>
             </div>
         </div>
         <modalComponent :show="openmodal">
             <template #title>
-                <span class="absolute top-0 bottom-0 right-0 px-4 py-3 max-h-fit " @click="openmodal = false">
+                <span class="absolute top-0 bottom-0 right-0 px-4 py-3 max-h-fit" @click="openmodal = false">
                     <svg class="w-6 h-6 text-red-500 fill-current" role="button" xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20">
                         <title>Close</title>
-                        <path
-                            d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
+                        <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
                     </svg>
                 </span>
             </template>
-
             <template #content>
                 <div>
                     <label class="block mb-2 font-bold" for="correo">Correo:</label>
@@ -919,7 +889,6 @@ onMounted(async () => {
                         id="correo" v-model="modelSendEmail.correo">
                 </div>
             </template>
-
             <template #footer>
                 <DangerButtonComponent @click.prevent="SendMail">
                     enviar
@@ -928,17 +897,15 @@ onMounted(async () => {
         </modalComponent>
         <modalComponent :show="openmodalStatusChangeDate">
             <template #title>
-                <span class="absolute top-0 bottom-0 right-0 px-4 py-3 max-h-fit "
+                <span class="absolute top-0 bottom-0 right-0 px-4 py-3 max-h-fit"
                     @click="openmodalStatusChangeDate = false">
                     <svg class="w-6 h-6 text-red-500 fill-current" role="button" xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20">
                         <title>Close</title>
-                        <path
-                            d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
+                        <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
                     </svg>
                 </span>
             </template>
-
             <template #content>
                 <div>
                     <label class="block mb-2 font-bold" for="correo">Contraseña:</label>
@@ -946,7 +913,6 @@ onMounted(async () => {
                         type="password" id="user_password" v-model="userPassword">
                 </div>
             </template>
-
             <template #footer>
                 <DangerButtonComponent @click.prevent="sendChangeDate">
                     enviar

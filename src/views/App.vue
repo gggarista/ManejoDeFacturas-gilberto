@@ -42,10 +42,9 @@ const logout: any = () => {
         </button>
       </div>
       <div class="justify-between  p-1 w-full col-span-7 lg:col-span-7 sm:col-span-3 max-[640px]:col-span-2">
-        <h2 class="text-lg font-medium text-gray-800 ">ARISTA SOFTWARE - CONSULTAR DOCUMENTOS - {{ CompanieName }}  </h2>
-      </div>
-      <div class="justify-between  p-1 w-full col-span-4 lg:col-span-4 sm:col-span-2 max-[640px]:hidden">
-            
+        <h2 class="text-base sm:text-lg md:text-xl font-medium text-gray-800 break-words sm:whitespace-normal">
+        ARISTA SOFTWARE - CONSULTAR DOCUMENTOS - {{ CompanieName }}
+      </h2>
       </div>
     </div>
   </div>

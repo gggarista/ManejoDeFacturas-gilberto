@@ -265,42 +265,28 @@ const dataLogin: any = computed({
     get() {
         return store.getterDataLogin
     },
-    set(val) {
+    set(val: any) {
         store.setDataLogin(val)
     }
 });
 const filterDocument: any = computed(() => {
     if (DataDocument.value) {
         return DataDocument.value.filter((item: any) => {
-            const searchTerm = varBuscadorNormal.value?.toLowerCase();
-            const numberMatches = item.number.toLowerCase().includes(searchTerm);
-            return numberMatches;
+            const searchTerm1 = varBuscadorNormal.value?.toLowerCase();
+            const numberMatches = item.number.toLowerCase().includes(searchTerm1);
+            const prefixMatches = item.prefix.toLowerCase().includes(searchTerm1);
+            return numberMatches || prefixMatches ;
         });
     }
 })
-const filterDocumentPrefix: any = computed(() => {
-    if (DataDocument.value) {
-        return filterDocument.value.filter((item: any) => {
-            const searchTerm = varBuscadorPrefix.value?.toLowerCase();
-            const prefixMatches = item.prefix.toLowerCase().includes(searchTerm);
-            return prefixMatches;
-        });
-    }
-})
+
 const filterDocumentCliente: any = computed(() => {
     if (DataDocument.value) {
-        return filterDocumentPrefix.value.filter((item: any) => {
+        return filterDocument.value.filter((item: any) => {
             const searchTerm = varBuscadorCliente.value?.toLowerCase();
-            if (item.client && item.client != '') {
-
-                const clienteMatches = (JSON.parse(item.client).name) ? JSON.parse(item.client).name.toLowerCase().includes(searchTerm) : '';
-                const clienteNumberMatches = item.customer.toLowerCase().includes(searchTerm);
+                const clienteMatches =  item.name.toLowerCase().includes(searchTerm) ;
+                const clienteNumberMatches = item.identification_number.toLowerCase().includes(searchTerm);
                 return clienteMatches || clienteNumberMatches;
-            } else {
-                const clienteMatches = ''
-                const clienteNumberMatches = item.customer.toLowerCase().includes(searchTerm);
-                return clienteMatches || clienteNumberMatches;
-            }
         });
     }
 })
@@ -321,7 +307,7 @@ const filterDocumentDate: any = computed(() => {
         return filterStatusDocument.value.filter((item: any) => {
             const startDate = dateValue.value.startDate.substring(0, 10).toLowerCase();
             const endDate = dateValue.value.endDate.substring(0, 10).toLowerCase();
-            const documentDate = item.created_at.substring(0, 10).toLowerCase();
+            const documentDate = item.date_issue.substring(0, 10).toLowerCase();
             return documentDate >= startDate && documentDate <= endDate;
         });
     }
@@ -385,44 +371,44 @@ const getDataLogin: any = async (urlPAginate: any = null) => {
         let { data } = await axios.post(`${urlPAginate}&itemPerPage=${itemPerPageSelected.value}&aceptada=${varSelectedStatusDocument.value}&created_start=${dateValue.value.startDate} 00:00:00&created_end=${dateValue.value.endDate} 23:59:59&cliente=${varBuscadorCliente.value}&prefijo=${varBuscadorPrefix.value}&documento=${varBuscadorNormal.value}`, { email: model.email, password: model.password })
 
         // Paso 1: Ordenar el array por fecha de forma descendente
-        data[0].sort((a: any, b: any) => b.created_at - a.created_at);
-        // Paso 2 y 3: Crear un nuevo array y eliminar duplicados por fecha
-        const objetosUnicos: any = [];
-        const fechasVistas = new Set();
-        data[0].forEach((objeto: any) => {
-            const fecha = objeto.number;
-            if (!fechasVistas.has(fecha)) {
-                objetosUnicos.push(objeto);
-                fechasVistas.add(fecha);
-            }
-        });
-        data[0] = objetosUnicos;
+        // data[0].sort((a: any, b: any) => b.created_at - a.created_at);
+        // // Paso 2 y 3: Crear un nuevo array y eliminar duplicados por fecha
+        // const objetosUnicos: any = [];
+        // const fechasVistas = new Set();
+        // data[0].forEach((objeto: any) => {
+        //     const fecha = objeto.number;
+        //     if (!fechasVistas.has(fecha)) {
+        //         objetosUnicos.push(objeto);
+        //         fechasVistas.add(fecha);
+        //     }
+        // });
+        // data[0] = objetosUnicos;
 
-        for (const iterator of data[0]) {
-            iterator.isSend = false
-        }
+        // for (const iterator of data[0]) {
+        //     iterator.isSend = false
+        // }
 
-        // Utilizamos reduce para obtener un nuevo array con registros únicos según 'id'
-        const uniqueObjectsWithStatus1 = data[0].reduce((accumulator: any, currentObject: any) => {
-            // Verificamos si ya existe un registro con el mismo 'id' en el acumulador
-            const existingObject = accumulator.find((obj: any) => obj.id === currentObject.id);
+        // // Utilizamos reduce para obtener un nuevo array con registros únicos según 'id'
+        // const uniqueObjectsWithStatus1 = data[0].reduce((accumulator: any, currentObject: any) => {
+        //     // Verificamos si ya existe un registro con el mismo 'id' en el acumulador
+        //     const existingObject = accumulator.find((obj: any) => obj.id === currentObject.id);
 
-            // Si no existe, agregamos el objeto actual al acumulador
-            if (!existingObject) {
-                accumulator.push(currentObject);
-            } else {
-                // Si existe un objeto con el mismo 'id', verificamos si el 'status' del actual es 1
-                // Si el 'status' del actual es 1, reemplazamos el objeto existente con el actual
-                if (currentObject.state_document_id === 1) {
-                    accumulator[accumulator.indexOf(existingObject)] = currentObject;
-                }
-            }
+        //     // Si no existe, agregamos el objeto actual al acumulador
+        //     if (!existingObject) {
+        //         accumulator.push(currentObject);
+        //     } else {
+        //         // Si existe un objeto con el mismo 'id', verificamos si el 'status' del actual es 1
+        //         // Si el 'status' del actual es 1, reemplazamos el objeto existente con el actual
+        //         if (currentObject.state_document_id === 1) {
+        //             accumulator[accumulator.indexOf(existingObject)] = currentObject;
+        //         }
+        //     }
 
-            return accumulator;
-        }, []);
+        //     return accumulator;
+        // }, []);
 
 
-        data[0] = uniqueObjectsWithStatus1
+        // data[0] = uniqueObjectsWithStatus1
 
 
 
@@ -548,6 +534,7 @@ onMounted(async () => {
     firstPageLogin.value = decryptedText
     getDataLogin(firstPageLogin.value)
 
+
 })
 </script>
 
@@ -557,10 +544,7 @@ onMounted(async () => {
 
 
         <div class="flex items-center w-full gap-2 mt-1 ">
-            <div class="w-1/5">
-                <vue-tailwind-datepicker :formatter="formatter" v-model="dateValue" class="h-[38px] border border-gray-500 rounded-lg  placeholder-gray-600/70" />
-            </div>
-            <div class=" max-w-md mx-auto">
+            <div class=" max-w-md ">
                 <select @change="getDataLogin(firstPageLogin)" id="seleccionar"
                     :class="{ 'block p-2 border border-gray-500 rounded-xl bg-green-700 text-white': varSelectedStatusDocument == 'ACEPTADA', 'block p-2 border border-gray-500 rounded-xl bg-red-700 text-white ': varSelectedStatusDocument == 'POR ENVIAR' }"
                     v-model="varSelectedStatusDocument">
@@ -568,6 +552,9 @@ onMounted(async () => {
                     <option value="POR ENVIAR" class="text-white bg-red-700" selected>POR ENVIAR</option>
                     <option value=" " class="bg-white text-gray" placeholder="Estado"></option>
                 </select>
+            </div>
+            <div class="w-1/5">
+                <vue-tailwind-datepicker :formatter="formatter" v-model="dateValue" class="h-[38px] border border-gray-500 rounded-lg  placeholder-gray-600/70" />
             </div>
             <div class="relative flex items-center  mt-1 md:mt-0">
                 <span class="absolute">
@@ -582,7 +569,7 @@ onMounted(async () => {
                     v-model="varBuscadorCliente"
                     class="block w-full py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-600/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
-            <div class="relative flex items-center ">
+            <!-- <div class="relative flex items-center ">
                 <span class="absolute">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-5 h-5 mx-3 text-gray-400 dark:text-gray-600">
@@ -593,7 +580,7 @@ onMounted(async () => {
                 <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por prefijo"
                     v-model="varBuscadorPrefix"
                     class="block  py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-400/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
-            </div>
+            </div> -->
             <div class="relative flex items-center ">
                 <span class="absolute">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -602,7 +589,7 @@ onMounted(async () => {
                             d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                     </svg>
                 </span>
-                <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por Número"
+                <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por documento"
                     v-model="varBuscadorNormal"
                     class="block py-1.5 pr-5 text-gray-700 bg-white border border-gray-500 rounded-lg md:w-80 placeholder-gray-400/70 pl-11  focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
@@ -725,7 +712,7 @@ onMounted(async () => {
                                                     class="absolute w-full h-full opacity-0 cursor-pointer focus:opacity-100 checkbox" /-->
                                                 <input type="checkbox" class="checkbox"
                                                     @change="toggleSelectedDocuments(document)"
-                                                    ref="checkboxSelectedDocuments">
+                                                    ref="checkboxSelectedDocuments"> 
                                                 <div class="hidden text-white bg-indigo-700 rounded-sm check-icon">
                                                     <svg class="icon icon-tabler icon-tabler-check"
                                                         xmlns="http://www.w3.org/2000/svg" width="20" height="20"

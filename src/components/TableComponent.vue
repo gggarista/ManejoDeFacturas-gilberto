@@ -336,6 +336,7 @@ watch(varSelectedStatusDocument, () => {
     selectedDocuments.value = [];
     fileBulkInput.value = [];
     nameFile.value = '';
+    statuFileBulkInput.value = false
 })
 
 //---------- metodos---------------------
@@ -632,7 +633,7 @@ onMounted(async () => {
                             <div class=" flex  gap-2 mx-2" >
                                 <div class="flex " v-if="selectedDocuments.length > 0">
                                     <button @click="downloadSelectedDocuemnts"
-                                        class="relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow mt-1">
+                                        :class="{'relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow mt-1 ': varSelectedStatusDocument == 'POR ENVIAR', 'relative w-30 h-8 overflow-hidden text-xs bg-white rounded-lg shadow ':varSelectedStatusDocument == 'ACEPTADA'}">
                                         <span class="relative flex gap-1 px-2 text-white hover:text-white bg-[#2471A3] hover:bg-[#85C1E9]">
                                             <img :src="FilePdfIon" class="w-8 h-9" />
                                             <p class="self-center font-bold ">Descargar Seleccionados</p>
@@ -663,7 +664,7 @@ onMounted(async () => {
                                 </label>
                             </div>
 
-                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="statuFileBulkInput && fileBulkInput.length > 0">
+                            <div class="relative flex items-center w-2/12 mt-1 md:mt-0" v-if="statuFileBulkInput">
                                 <button @click="uploadBulkFile"
                                     class="relative w-30 h-8 overflow-hidden text-xs  rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
                                     <span class="relative flex gap-1 px-2 text-white group-hover:text-white">
@@ -677,7 +678,7 @@ onMounted(async () => {
                             <div class="relative"
                                 v-if="varSelectedStatusDocument == 'POR ENVIAR' && selectedDocuments.length > 0">
                                 <button @click.prevent="openModalChangeDate()"
-                                    class="relative h-8 overflow-hidden text-xs  rounded-lg shadow w-22 bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
+                                    class="relative h-8 overflow-hidden text-xs  rounded-lg shadow w-22 bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group mt-1">
                                     <span class="relative flex gap-1 px-2 text-white font-bold">
                                         <img :src="calendarIon" class="w-5 h-5 " />
                                         <p font-bold class="self-center group-hover:text-white"> Cambiar Fecha</p>
@@ -754,6 +755,8 @@ onMounted(async () => {
                                     <td class="px-4 py-2 text-center whitespace-nowrap">
                                         <div>
                                             <p class="font-bold text-gray-900 ">
+                                                
+                                                {{ document.prefix }}{{ document.number }}<br />
                                                 {{ document.type_document_id == 1 ? 'Factura venta nacional' :
                 document.type_document_id == 2 ? 'Factura Exportacion' :
                     document.type_document_id == 3 ? 'Factura contingencia' :
@@ -762,8 +765,7 @@ onMounted(async () => {
                                 document.type_document_id == 11 ? 'Documento soporte' :
                                     document.type_document_id == 12 ? 'Factura venta tipo-04' :
                                         document.type_document_id == 13 ? 'Ajuste Documento soporte' :
-                                            '' }} <br />
-                                                {{ document.prefix }}{{ document.number }}
+                                            '' }}
                                             </p>
                                         </div>
                                     </td>

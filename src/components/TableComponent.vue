@@ -5,6 +5,8 @@ import calendarIon from '../assets/calendar.svg'
 import FilePdfIon from '../assets/pdf-svgrepo-com.svg'
 import FileXmlIon from '../assets/xml-svgrepo-com.svg'
 import FileJsonIon from '../assets/json-file-svgrepo-com.svg'
+import LastPageIon from '../assets/last-page-svgrepo-com.svg'
+import FirstPageIon from '../assets/first-page-svgrepo-com.svg'
 //import FileZipIon from '../assets/zip-svgrepo-com.svg'
 import modalComponent from './dialogModal.vue'
 import DangerButtonComponent from './Dangerbutton.vue'
@@ -75,6 +77,9 @@ const totalSelectedDocuments = computed(() => {
     return selectedDocuments.value.reduce((total: number, document: any) => total + document.total, 0);
 });
 
+const sortField: Ref<any> = ref('date_issue');
+const sortOrder: Ref<any> = ref('desc');
+    
 const toggleSelectedDocuments = (document: any) => {
     // Añadir o eliminar documentos de la selección
     const index = selectedDocuments.value.findIndex((d: any) => d.id === document.id);
@@ -269,6 +274,16 @@ const downloadJsonFile = (doc:any) => {
       document.body.removeChild(linkElement);
       URL.revokeObjectURL(url);
   }
+
+  const sortData =(field:any) => {
+        if (sortField.value === field) {
+            sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+        } else {
+           sortField.value = field;
+           sortOrder.value = 'asc';
+        }
+       getDataLogin(firstPageLogin.value);
+   }
 //---------- variables computed---------------------
 
 /**
@@ -378,11 +393,17 @@ const GenerateOpcionDePaginas: any = (url: any = '') => {
 }
 const getDataLogin: any = async (urlPAginate: any = null) => {
     try {
+
+        selectedDocuments.value = [];
+        checkboxSelectedDocuments.value.forEach((checkbox: any) => {
+            checkbox.checked = false;
+        });
+        
         const USR: any = localStorage.getItem('user')
         const bytes = AES.decrypt(USR, secretKey.value);
         var dataL: any = bytes.toString(enc.Utf8);
         var model = JSON.parse(dataL)
-        let { data } = await axios.post(`${urlPAginate}&itemPerPage=${itemPerPageSelected.value}&aceptada=${varSelectedStatusDocument.value}&created_start=${dateValue.value.startDate} 00:00:00&created_end=${dateValue.value.endDate} 23:59:59&cliente=${varBuscadorCliente.value}&prefijo=${varBuscadorPrefix.value}&documento=${varBuscadorNormal.value}`, { email: model.email, password: model.password })
+        let { data } = await axios.post(`${urlPAginate}&itemPerPage=${itemPerPageSelected.value}&aceptada=${varSelectedStatusDocument.value}&created_start=${dateValue.value.startDate} 00:00:00&created_end=${dateValue.value.endDate} 23:59:59&cliente=${varBuscadorCliente.value}&prefijo=${varBuscadorPrefix.value}&documento=${varBuscadorNormal.value}&sort_field=${sortField.value}&sort_order=${sortOrder.value}`, { email: model.email, password: model.password })
 
         // Paso 1: Ordenar el array por fecha de forma descendente
         // data[0].sort((a: any, b: any) => b.created_at - a.created_at);
@@ -690,25 +711,47 @@ onMounted(async () => {
                                         <div class="flex gap-1 justify-left">
                                             <img :src="calendarIon" class="self-left w-6 h-6" />
                                             Fecha Emision
+                                            <button @click="sortData('date_issue')">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                                    stroke="currentColor" class="w-4 h-4">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M12 4.5l4 4H8l4-4zm0 15l-4-4h8l-4 4z" />
+                                                </svg>
+                                            </button>
                                         </div>
                                     </th>
                                     <th scope="col" class="px-12 py-3 font-normal text-center text-white">
                                         Cliente
+                                        <button @click="sortData('customer')">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                                stroke="currentColor" class="w-4 h-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M12 4.5l4 4H8l4-4zm0 15l-4-4h8l-4 4z" />
+                                            </svg>
+                                        </button>
                                     </th>
                                     <th scope="col" class="px-12 py-3 font-normal text-center text-white">
                                         Documento
+                                        <button @click="sortData('number')">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                                stroke="currentColor" class="w-4 h-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M12 4.5l4 4H8l4-4zm0 15l-4-4h8l-4 4z" />
+                                            </svg>
+                                        </button>
                                     </th>
                                     <th scope="col" class="px-4 py-3 font-normal text-center text-white">
                                         Valor documento
-                                    </th>
-                                    <th scope="col" class="px-4 py-3 font-normal text-center text-white">
-                                        Descargas
-                                    </th>
-                                    <th scope="col" class="px-4 py-3 font-normal text-center text-white">
-                                        Acciones
+                                        <button @click="sortData('total')">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                                stroke="currentColor" class="w-4 h-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M12 4.5l4 4H8l4-4zm0 15l-4-4h8l-4 4z" />
+                                            </svg>
+                                        </button>
                                     </th>
                                     <th scope="col" class="px-12 py-3 font-normal text-center text-white">
-                                        Estado
+                                        Acciones
                                     </th>
                                 </tr>
                             </thead>
@@ -764,52 +807,52 @@ onMounted(async () => {
                                         </div>
                                     </td>
                                     <td class="px-2 py-2 text-center whitespace-nowrap">
-                                        <div class="flex gap-1 justify-center">
-                                            <a :href="`${apiUrl}/api/download/${document.company_identification_number}/${document.pdf}`"
-                                                target="__blank">
-                                                <img :src="FilePdfIon" class="w-8 h-9" />
+                                        <div class="flex flex-wrap gap-1 justify-center">
+
+                                            <a :href="`${apiUrl}/api/download/${document.company_identification_number}/${document.pdf}`" target="__blank">
+                                                <img :src="FilePdfIon" class="w-6 h-6 sm:w-8 sm:h-9" />
                                             </a>
-                                            <a :href="`${apiUrl}/api/download/${document.company_identification_number}/${document.xml}`"
-                                                target="__blank">
-                                                <img :src="FileXmlIon" class="w-8 h-9" />
+                                            <a :href="`${apiUrl}/api/download/${document.company_identification_number}/${document.xml}`" target="__blank">
+                                                <img :src="FileXmlIon" class="w-6 h-6 sm:w-8 sm:h-9" />
                                             </a>
-                                            <button @click="downloadJsonFile(document)"><img :src="FileJsonIon" class="w-8 h-9" /></button>
-                                        </div>
-                                    </td>
-                                    <td class="px-1 py-2 text-center whitespace-nowrap">
-                                        <div class="relative">
-                                            <button @click.prevent="openModalSendEmail(document)"
-                                                class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow w-22 group">
-                                                <div class="absolute inset-0 w-2 bg-orange-400 transition-all duration-[250ms] ease-out group-hover:w-full">
-                                                </div>
-                                                <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
-                                                    <img :src="sendMailIon" class="w-5 h-5">
-                                                    <p font-bold class="self-center">Correo</p>
-                                                </span>
+                                            <button @click="downloadJsonFile(document)">
+                                                <img :src="FileJsonIon" class="w-6 h-6 sm:w-8 sm:h-9" />
                                             </button>
-                                        </div>
-                                    </td>
-                                    <td class="px-1 py-2 text-center whitespace-nowrap">
-                                        <div v-if="document.state_document_id == 1"
-                                            :class="{ 'flex justify-center gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-emerald-100/60 w-fit': document.state_document_id == 1, 'flex gap-1 px-3 py-1 font-normal rounded-full text-black gap-x-2 bg-red-100/60 w-fit': document.state_document_id == 0 }">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="#02B126">
-                                                <path d="M9.16667 2.5L16.6667 10C17.0911 10.4745 17.0911 11.1922 16.6667 11.6667L11.6667 16.6667C11.1922 17.0911 10.4745 17.0911 10 16.6667L2.5 9.16667V5.83333C2.5 3.99238 3.99238 2.5 5.83333 2.5H9.16667" stroke="#52525B" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></path>
-                                                <circle cx="7.50004" cy="7.49967" r="1.66667" stroke="#52525B" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></circle>
-                                            </svg>
-                                            <p class="text-white bg-green-700 w-fit h-fit py-[2px] px-[6px] rounded-lg">
-                                                ACEPTADA
-                                            </p>
-                                        </div>
-                                        <div v-else class="px-1 py-2 text-center whitespace-nowrap">
-                                            <div class="relative">
-                                                <button @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)"
-                                                    class="relative w-24 h-6 overflow-hidden text-xs bg-white rounded-lg shadow group">
-                                                    <div class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
+
+                                            <div class="px-1 py-2 text-center whitespace-nowrap">
+                                                <button @click.prevent="openModalSendEmail(document)"
+                                                    class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow w-16 sm:w-22 group">
+                                                    <div class="absolute inset-0 w-3 bg-orange-400 transition-all duration-[250ms] ease-out group-hover:w-full">
+                                                    </div>
                                                     <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
-                                                        <img :src="SendInvoiceIon" class="w-4 h-4" />
-                                                        <p class="self-center font-bold">{{ document.isSend == true ? 'Enviando...' : 'Enviar' }}</p>
+                                                        <img :src="sendMailIon" class="w-4 h-4">
+                                                        <p font-bold class="self-center hidden sm:block">Correo</p>
                                                     </span>
                                                 </button>
+                                            </div>
+
+                                            <div v-if="document.state_document_id == 1"
+                                                :class="{ 'flex justify-center gap-1 px-2 py-1 font-normal rounded-full text-black bg-emerald-100/60 w-fit': document.state_document_id == 1, 'flex gap-1 px-2 py-1 font-normal rounded-full text-black bg-red-100/60 w-fit': document.state_document_id == 0 }">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 20 20" fill="#02B126">
+                                                    <path d="M9.16667 2.5L16.6667 10C17.0911 10.4745 17.0911 11.1922 16.6667 11.6667L11.6667 16.6667C11.1922 17.0911 10.4745 17.0911 10 16.6667L2.5 9.16667V5.83333C2.5 3.99238 3.99238 2.5 5.83333 2.5H9.16667" stroke="#52525B" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></path>
+                                                    <circle cx="7.50004" cy="7.49967" r="1.66667" stroke="#52525B" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></circle>
+                                                </svg>
+                                                <p class="text-white bg-green-700 w-fit h-fit py-[1px] px-[2px] text-xs rounded-lg">
+                                                    ACEPTADA
+                                                </p>
+                                            </div>
+
+                                            <div v-else class="px-1 py-2 text-center whitespace-nowrap">
+                                                <div class="relative">
+                                                    <button @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)"
+                                                        class="relative w-16 sm:w-22 h-6 overflow-hidden text-xs bg-white rounded-lg shadow group">
+                                                        <div class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
+                                                        <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                                            <img :src="SendInvoiceIon" class="w-4 h-4" />
+                                                            <p class="self-center font-bold hidden sm:block">{{ document.isSend == true ? 'Enviando...' : 'Enviar' }}</p>
+                                                        </span>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
@@ -825,7 +868,7 @@ onMounted(async () => {
             <div class="text-sm text-gray-500">
                 Reg-<span class="font-medium text-gray-700">{{ pagination.from }} al {{ pagination.to }}</span>
             </div>
-            <div class="w-full sm:w-3/12 max-w-md mx-auto flex items-center">
+            <div class="w-full sm:w-auto max-w-md mx-auto flex items-center">
                 <label class="mr-2">RegxPág:</label>
                 <select id="seleccionar" class="block w-full p-2 border border-gray-500 rounded-lg"
                     @change="getDataLogin(firstPageLogin)" v-model="itemPerPageSelected">
@@ -844,31 +887,37 @@ onMounted(async () => {
                     </option>
                 </select>
             </div>
-            <div class="flex items-center mt-4 gap-x-4 sm:mt-0 w-full sm:w-auto">
+            <div class="flex justify-end items-center mt-4 gap-x-2 sm:mt-0 w-full sm:w-auto">
+                <button @click.prevent="getDataLogin(pagination.first_page_url)"
+                        :disabled="pagination.prev_page_url == null"
+                        class="flex items-center justify-center w-8 h-8 text-sm transition-colors duration-200 bg-white border rounded-full hover:bg-gray-100 disabled:opacity-50" title="Primera Pagina">
+                        <img :src="FirstPageIon" class="w-8 h-9" />
+                </button>
+
                 <button @click.prevent="getDataLogin(pagination.prev_page_url)"
-                    :disabled="pagination.prev_page_url == null"
-                    class="flex items-center justify-center w-full sm:w-auto px-5 py-2 text-sm capitalize transition-colors duration-200 bg-white border rounded-md gap-x-2 hover:bg-gray-100">
-                    <span class="bg-blue-400 text-white border border-gray-500 rounded-lg px-4 py-2 hover:bg-gray-500">
-                        Pag.Anterior
-                    </span>
+                        :disabled="pagination.prev_page_url == null"
+                        class="flex items-center justify-center w-8 h-8 text-sm transition-colors duration-200 bg-white border rounded-full hover:bg-gray-100 disabled:opacity-50" title="Pagina Anterior">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
+                        stroke="currentColor" class="w-5 h-5">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
                     </svg>
                 </button>
 
                 <button @click.prevent="getDataLogin(pagination.next_page_url)"
-                    :disabled="pagination.next_page_url == null"
-                    class="flex items-center justify-center w-full sm:w-auto px-5 py-2 text-sm text-gray-700 capitalize transition-colors duration-200 bg-white border rounded-md gap-x-2 hover:bg-gray-100">
+                        :disabled="pagination.next_page_url == null"
+                        class="flex items-center justify-center w-8 h-8 text-sm transition-colors duration-200 bg-white border rounded-full hover:bg-gray-100 disabled:opacity-50" title="Pagina Siguiente">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-5 h-5 rtl:-scale-x-100">
+                        stroke="currentColor" class="w-5 h-5">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
                     </svg>
-                    <span class="bg-blue-400 text-white border border-gray-500 rounded-lg px-4 py-2 hover:bg-gray-500">
-                        Pag.Siguiente
-                    </span>
+                </button>
+
+                <button @click.prevent="getDataLogin(pagination.last_page_url)"
+                        :disabled="pagination.next_page_url == null"
+                        class="flex items-center justify-center w-8 h-8 text-sm transition-colors duration-200 bg-white border rounded-full hover:bg-gray-100 disabled:opacity-50" title="Ultima Pagina">
+                        <img :src="LastPageIon" class="w-8 h-9" />
                 </button>
             </div>
         </div>

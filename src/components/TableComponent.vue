@@ -248,12 +248,19 @@ function exportToCsv(filename: string, headers: any, rows: any) {
     }
 }
 
-const generateCsv = () => {
+const generateCsv: any = async () => {
+
+    const USR: any = localStorage.getItem('user')
+    const bytes = AES.decrypt(USR, secretKey.value);
+    var dataL: any = bytes.toString(enc.Utf8);
+    var model = JSON.parse(dataL)
+    const { data } = await axios.post(`${firstPageLogin.value}&itemPerPage=${pagination.value.total}&aceptada=${varSelectedStatusDocument.value}&created_start=${dateValue.value.startDate} 00:00:00&created_end=${dateValue.value.endDate} 23:59:59&cliente=${varBuscadorCliente.value}&prefijo=${varBuscadorPrefix.value}&documento=${varBuscadorNormal.value}&sort_field=${sortField.value}&sort_order=${sortOrder.value}`, { email: model.email, password: model.password })
+
     var exportData: any[] = [];
-    if (filterDocumentDate.value.length > 0) {
+    if (data[0] && data[0].length > 0) {
         var headers = ['Prefijo', 'Numero', 'Cufe', 'Fecha', 'Hora', 'Fecha Aceptacion', 'Resolucion'];
-        const fileName = filterDocumentDate.value[0].company_identification_number + '_' + dateValue.value.startDate + '_' + dateValue.value.endDate + '.csv';
-        filterDocumentDate.value.forEach((element: any) => {
+        const fileName = data[0][0].company_identification_number + '_' + dateValue.value.startDate + '_' + dateValue.value.endDate + '.csv';
+        data[0].forEach((element: any) => {
             const request = JSON.parse(element.request_api);
             exportData.push([element.prefix, element.number, element.cufe, request.date, request.time, element.date_issue, request.resolution_number]);
         });
@@ -687,7 +694,7 @@ onMounted(async () => {
                                     class="relative w-full md:w-30 h-10 overflow-hidden text-xs rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
                                     <span class="relative flex gap-1 px-2 text-white group-hover:text-white">
                                         <img :src="SendInvoiceIon" class="w-4 h-4 self-center" />
-                                        <p class="self-center font-bold">{{ statuSendFileBulk ? 'Enviando Facturas ...': 'Subir archivo a la base de datos' }}</p>
+                                        <p class="self-center font-bold">{{ statuSendFileBulk ? 'Enviando Facturas ...': 'Enviar archivo importado' }}</p>
                                     </span>
                                 </button>
                             </div>
@@ -866,7 +873,7 @@ onMounted(async () => {
         <!-- footer -->
         <div class="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div class="text-sm text-gray-500">
-                Reg-<span class="font-medium text-gray-700">{{ pagination.from }} al {{ pagination.to }}</span>
+                Reg-<span class="font-medium text-gray-700">{{ pagination.from }} al {{ pagination.to }} de  {{ pagination.total }}</span>
             </div>
             <div class="w-full sm:w-auto max-w-md mx-auto flex items-center">
                 <label class="mr-2">RegxPág:</label>

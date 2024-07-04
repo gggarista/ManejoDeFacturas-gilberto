@@ -271,7 +271,8 @@ const generateCsv: any = async () => {
 
 const downloadJsonFile = (doc:any) => {
  
-      const blob: Blob = new Blob([doc.request_api], { type: 'text/plain' });
+      const formattedJson = JSON.stringify(JSON.parse(doc.request_api), null, 2);
+      const blob: Blob = new Blob([formattedJson], { type: 'application/json' });
       const url: string = URL.createObjectURL(blob);
       const linkElement: HTMLAnchorElement = document.createElement('a');
       linkElement.href = url;

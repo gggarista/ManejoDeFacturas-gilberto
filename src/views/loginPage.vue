@@ -96,7 +96,7 @@ const postLogiun: any = async () => {
 </script>
 <template>
     <section class="flex items-center justify-center min-h-screen  ">
-        <div class="flex flex-col  p-5 shadow-lg shadow-gray-400 rounded-2xl w-3/12 ">
+        <div class="flex flex-col  p-5 shadow-lg shadow-gray-400 rounded-2xl md:w-3/12 ">
             <div class="flex justify-center">
                 <img :src="logo" class="self-center rounded-2xl w-2/5 h-5/12" alt="page img">
             </div>

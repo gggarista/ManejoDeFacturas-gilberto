@@ -704,7 +704,7 @@ onMounted(async () => {
                             <thead class="bg-blue-700 text-[13px]">
                                 <tr>
                                     <th>
-                                        <div class="ml-2">
+                                        <!-- <div class="ml-2">
                                             <div
                                                 class="relative flex items-left justify-center flex-shrink-0 w-3 h-3 bg-gray-200 rounded-lg">
                                                 <input type="checkbox" class="checkbox" @change="SelectAllItems()"
@@ -719,7 +719,7 @@ onMounted(async () => {
                                                     </svg>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div> -->
                                     </th>
                                     <th scope="col" class="px-2 py-1 text-left whitespace-nowrap text-white">
                                         <div class="flex gap-1 justify-left">

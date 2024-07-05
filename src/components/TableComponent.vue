@@ -22,9 +22,6 @@ import { AES, enc } from 'crypto-js';
 const apiUrl: string = import.meta.env.VITE_API_URL;
 axios.defaults.baseURL = apiUrl;
 
-
-
-
 const DataDocument: Ref<Array<object> | null> = ref(null)
 const varBuscadorNormal: Ref<String | null> = ref('');
 const varBuscadorPrefix: Ref<String | null> = ref('');
@@ -35,6 +32,7 @@ const dateValue: Ref<{ startDate: String, endDate: String }> = ref({
     startDate: moment(new Date()).format('YYYY-MM-DD'),
     endDate: moment(new Date()).format('YYYY-MM-DD')
 })
+
 const formatter = ref({
     date: 'YYYY-MM-DD',
 })
@@ -45,6 +43,7 @@ const modelSendEmail: Ref<{ company_idnumber: String, prefix: String, number: St
     number: '',
     correo: '',
 })
+
 const OpcionesPaginas: any = ref([])
 const paginaSelected: Ref<String> = ref(`${axios.defaults.baseURL}/login-manejo-factura?page=1`)
 const itemPerPageSelected: Ref<String> = ref('14')
@@ -53,12 +52,10 @@ const varSelectedStatusDocument: Ref<String> = ref("POR ENVIAR")
 const secretKey: Ref<any> = ref('arista') // Cambia esto por tu clave secreta
 const userPassword: Ref<any> = ref('') // Cambia esto por tu clave secreta
 
-
 const TK: any = localStorage.getItem('token');
 const bytes = AES.decrypt(TK, secretKey.value);
 const token: string | null = bytes.toString(enc.Utf8);
 axios.defaults.headers.common = { 'Authorization': `Bearer ${token}` }
-
 
 const firstPageLogin: Ref<any> = ref('')
 const openmodal: Ref<boolean> = ref(false);
@@ -80,7 +77,7 @@ const totalSelectedDocuments = computed(() => {
 const sortField: Ref<any> = ref('date_issue');
 const sortOrder: Ref<any> = ref('desc');
 const isLoading = ref(false);
-    
+
 const toggleSelectedDocuments = (document: any) => {
     // Añadir o eliminar documentos de la selección
     const index = selectedDocuments.value.findIndex((d: any) => d.id === document.id);
@@ -90,6 +87,16 @@ const toggleSelectedDocuments = (document: any) => {
         selectedDocuments.value.splice(index, 1);
     }
 };
+
+// Seleccionar o deseleccionar todos los elementos listados dinámicamente
+const SelectAllItems = () => {
+    const checkboxes = document.querySelectorAll('.checkbox');
+    const selectAllCheckbox: any = document.querySelector('#selectAllCheckbox');
+
+    checkboxes.forEach((checkbox: any) => {
+        checkbox.checked = selectAllCheckbox.checked;
+    });
+}
 
 const sendSelectedDocuments = () => {
     // Mostrar los IDs de los documentos seleccionados
@@ -108,8 +115,6 @@ const sendSelectedDocuments = () => {
         console.log("Acción cancelada");
     }
 };
-
-
 
 const downloadSelectedDocuemnts = async () => {
     // Mostrar los IDs de los documentos seleccionados
@@ -157,7 +162,6 @@ const getFilenameFromUrl = (url: any) => {
 };
 
 const handleFileChange = () => {
-    console.log({ fileBulkInput });
     nameFile.value = fileBulkInput.value.files[0].name;
     statuFileBulkInput.value = true;
 };
@@ -176,33 +180,39 @@ const uploadBulkFile = () => {
 
             if (jsonData['factura_masiva']) {
 
-                const promises = jsonData['factura_masiva'].map((invoiceData: any) => {
+                const promises = jsonData['factura_masiva'].map( async (invoiceData: any) => {
                     // Configura los headers
                     const headers = {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
                         'Authorization': 'Bearer ' + invoiceData.template_token
                     };
-
+                        let htmlHeader = 'Enviando Factura ' +  invoiceData.prefix + invoiceData.number;
+                        // Esto se ejecutará cuando todas las solicitudes Axios se completen
+                        toast(htmlHeader , { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_CENTER, onClose: () => location.reload() }); // ToastOptions
                     // Realiza la solicitud POST con Axios
-                    return axios.post(`${apiUrl}/api/ubl2.1/invoice`, JSON.stringify(invoiceData), {
-                        headers: headers,
-                    })
-                        .then(response => {
-                            const response_model = response.data;
-                            htmlResponse += 'Factura ' + invoiceData.prefix + invoiceData.number;
-                            if (response_model.ResponseDian && response_model.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.isValid == true) {
-                                cantSuccess++;
-                                htmlResponse += " Enviada Exitosamente\n";
-                            } else {
-                                cantFail++;
-                                htmlResponse += " fallo\n";
-                            }
-                        })
-                        .catch(error => {
-                            console.error(error);
-                            // Maneja errores aquí si es necesario
-                        });
+                    // return axios.post(`${apiUrl}/api/ubl2.1/invoice`, JSON.stringify(invoiceData), {
+                    //     headers: headers,
+                    // })
+                    //     .then((response: any) => {
+                    //         // const response_model = response.data;
+                    //         htmlResponse += 'Factura ' + invoiceData.prefix + invoiceData.number;
+                    //         // if (response_model.ResponseDian && response_model.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.isValid == true) {
+                    //             cantSuccess++;
+                    //             htmlResponse += " Enviada Exitosamente\n";
+                    //         // } else {
+                    //         //     cantFail++;
+                    //         //     htmlResponse += " fallo\n";
+                    //         // }
+                    //     })
+                    //     .catch((error: any) => {
+                    //         console.error(error);
+                    //         // Maneja errores aquí si es necesario
+                    //     });
+
+                    await axios.post(`${apiUrl}/api/ubl2.1/invoice`, JSON.stringify(invoiceData), { headers: headers })
+                    cantSuccess++;
+                    htmlResponse += "Enviada Exitosamente\n";
                 });
 
                 Promise.all(promises)
@@ -270,29 +280,29 @@ const generateCsv: any = async () => {
 
 }
 
-const downloadJsonFile = (doc:any) => {
- 
-      const formattedJson = JSON.stringify(JSON.parse(doc.request_api), null, 2);
-      const blob: Blob = new Blob([formattedJson], { type: 'application/json' });
-      const url: string = URL.createObjectURL(blob);
-      const linkElement: HTMLAnchorElement = document.createElement('a');
-      linkElement.href = url;
-      linkElement.download = doc.prefix+''+doc.number+'.txt';
-      document.body.appendChild(linkElement);
-      linkElement.click();
-      document.body.removeChild(linkElement);
-      URL.revokeObjectURL(url);
-  }
+const downloadJsonFile = (doc: any) => {
 
-  const sortData =(field:any) => {
-        if (sortField.value === field) {
-            sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
-        } else {
-           sortField.value = field;
-           sortOrder.value = 'asc';
-        }
-       getDataLogin(firstPageLogin.value);
-   }
+    const formattedJson = JSON.stringify(JSON.parse(doc.request_api), null, 2);
+    const blob: Blob = new Blob([formattedJson], { type: 'application/json' });
+    const url: string = URL.createObjectURL(blob);
+    const linkElement: HTMLAnchorElement = document.createElement('a');
+    linkElement.href = url;
+    linkElement.download = doc.prefix + '' + doc.number + '.txt';
+    document.body.appendChild(linkElement);
+    linkElement.click();
+    document.body.removeChild(linkElement);
+    URL.revokeObjectURL(url);
+}
+
+const sortData = (field: any) => {
+    if (sortField.value === field) {
+        sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortField.value = field;
+        sortOrder.value = 'asc';
+    }
+    getDataLogin(firstPageLogin.value);
+}
 //---------- variables computed---------------------
 
 /**
@@ -313,7 +323,7 @@ const filterDocument: any = computed(() => {
             const searchTerm1 = varBuscadorNormal.value?.toLowerCase();
             const numberMatches = item.number.toLowerCase().includes(searchTerm1);
             const prefixMatches = item.prefix.toLowerCase().includes(searchTerm1);
-            return numberMatches || prefixMatches ;
+            return numberMatches || prefixMatches;
         });
     }
 })
@@ -322,9 +332,9 @@ const filterDocumentCliente: any = computed(() => {
     if (DataDocument.value) {
         return filterDocument.value.filter((item: any) => {
             const searchTerm = varBuscadorCliente.value?.toLowerCase();
-                const clienteMatches =  item.name.toLowerCase().includes(searchTerm) ;
-                const clienteNumberMatches = item.identification_number.toLowerCase().includes(searchTerm);
-                return clienteMatches || clienteNumberMatches;
+            const clienteMatches = item.name.toLowerCase().includes(searchTerm);
+            const clienteNumberMatches = item.identification_number.toLowerCase().includes(searchTerm);
+            return clienteMatches || clienteNumberMatches;
         });
     }
 })
@@ -409,54 +419,12 @@ const getDataLogin: any = async (urlPAginate: any = null) => {
         checkboxSelectedDocuments.value.forEach((checkbox: any) => {
             checkbox.checked = false;
         });
-        
+
         const USR: any = localStorage.getItem('user')
         const bytes = AES.decrypt(USR, secretKey.value);
         var dataL: any = bytes.toString(enc.Utf8);
         var model = JSON.parse(dataL)
         let { data } = await axios.post(`${urlPAginate}&itemPerPage=${itemPerPageSelected.value}&aceptada=${varSelectedStatusDocument.value}&created_start=${dateValue.value.startDate} 00:00:00&created_end=${dateValue.value.endDate} 23:59:59&cliente=${varBuscadorCliente.value}&prefijo=${varBuscadorPrefix.value}&documento=${varBuscadorNormal.value}&sort_field=${sortField.value}&sort_order=${sortOrder.value}`, { email: model.email, password: model.password })
-
-        // Paso 1: Ordenar el array por fecha de forma descendente
-        // data[0].sort((a: any, b: any) => b.created_at - a.created_at);
-        // // Paso 2 y 3: Crear un nuevo array y eliminar duplicados por fecha
-        // const objetosUnicos: any = [];
-        // const fechasVistas = new Set();
-        // data[0].forEach((objeto: any) => {
-        //     const fecha = objeto.number;
-        //     if (!fechasVistas.has(fecha)) {
-        //         objetosUnicos.push(objeto);
-        //         fechasVistas.add(fecha);
-        //     }
-        // });
-        // data[0] = objetosUnicos;
-
-        // for (const iterator of data[0]) {
-        //     iterator.isSend = false
-        // }
-
-        // // Utilizamos reduce para obtener un nuevo array con registros únicos según 'id'
-        // const uniqueObjectsWithStatus1 = data[0].reduce((accumulator: any, currentObject: any) => {
-        //     // Verificamos si ya existe un registro con el mismo 'id' en el acumulador
-        //     const existingObject = accumulator.find((obj: any) => obj.id === currentObject.id);
-
-        //     // Si no existe, agregamos el objeto actual al acumulador
-        //     if (!existingObject) {
-        //         accumulator.push(currentObject);
-        //     } else {
-        //         // Si existe un objeto con el mismo 'id', verificamos si el 'status' del actual es 1
-        //         // Si el 'status' del actual es 1, reemplazamos el objeto existente con el actual
-        //         if (currentObject.state_document_id === 1) {
-        //             accumulator[accumulator.indexOf(existingObject)] = currentObject;
-        //         }
-        //     }
-
-        //     return accumulator;
-        // }, []);
-
-
-        // data[0] = uniqueObjectsWithStatus1
-
-
 
         DataDocument.value = data[0]
         pagination.value = data[1]
@@ -576,11 +544,11 @@ const sendChangeDate: any = async () => {
         openmodalStatusChangeDate.value = false;
         userPassword.value = '';
         setTimeout(() => {
-            if(responseData.data.success){
+            if (responseData.data.success) {
                 location.reload();
             }
         }, 1500);
-       
+
     } catch (error) {
         console.log(error)
     }
@@ -593,6 +561,7 @@ onMounted(async () => {
     var decryptedText = await bytes;
     firstPageLogin.value = decryptedText
     getDataLogin(firstPageLogin.value)
+    console.log({ apiUrl });
 
 
 })
@@ -603,7 +572,8 @@ onMounted(async () => {
         <!-- cabecera -->
         <div class="flex flex-col md:flex-row items-center w-full gap-2 ">
             <div class="w-fit">
-                <select @change="getDataLogin(firstPageLogin)" id="seleccionar" :class="{ 'block p-1 w-full border border-gray-500 rounded-xl bg-green-700 text-white': varSelectedStatusDocument == 'ACEPTADA', 'block  p-1 border border-gray-500 rounded-xl bg-red-700 text-white w-full ': varSelectedStatusDocument == 'POR ENVIAR' }"
+                <select @change="getDataLogin(firstPageLogin)" id="seleccionar"
+                    :class="{ 'block p-1 w-full border border-gray-500 rounded-xl bg-green-700 text-white': varSelectedStatusDocument == 'ACEPTADA', 'block  p-1 border border-gray-500 rounded-xl bg-red-700 text-white w-full ': varSelectedStatusDocument == 'POR ENVIAR' }"
                     v-model="varSelectedStatusDocument">
                     <option value="ACEPTADA" class="text-white bg-green-700">ACEPTADA</option>
                     <option value="POR ENVIAR" class="text-white bg-red-700" selected>POR ENVIAR</option>
@@ -611,7 +581,8 @@ onMounted(async () => {
                 </select>
             </div>
             <div class="w-full md:w-1/5">
-                <vue-tailwind-datepicker :formatter="formatter" v-model="dateValue" class="w-full h-[30px] border border-gray-500 rounded-lg placeholder-gray-600/70" />
+                <vue-tailwind-datepicker :formatter="formatter" v-model="dateValue"
+                    class="w-full h-[30px] border border-gray-500 rounded-lg placeholder-gray-600/70" />
             </div>
             <div class="relative flex items-center w-full md:w-auto mt-1 md:mt-0">
                 <span class="absolute left-3">
@@ -637,43 +608,52 @@ onMounted(async () => {
                     v-model="varBuscadorNormal"
                     class="block w-full h-[30px] pr-5 pl-10 text-gray-700 bg-white border border-gray-500 rounded-lg placeholder-gray-400/70 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
-            <svg v-if="isLoading"  class="animate-spin  mr-3 h-full w-8 text-red-300 ml-5 self-center" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg v-if="isLoading" class="animate-spin  mr-3 h-full w-8 text-red-300 ml-5 self-center"
+                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>  
+                <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+            </svg>
         </div>
 
         <!-- body -->
         <div class="flex flex-col ">
             <div class="-mx-4   overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-                    <div class="overflow-hidden border border-gray-200 md:rounded-lg">    
+                    <div class="overflow-hidden border border-gray-200 md:rounded-lg">
 
-                        <div :class="{'flex flex-wrap w-full gap-2':varSelectedStatusDocument == 'POR ENVIAR', 'flex flex-wrap w-full gap-2  justify-between': varSelectedStatusDocument == 'ACEPTADA' }">
+                        <div
+                            :class="{ 'flex flex-wrap w-full gap-2': varSelectedStatusDocument == 'POR ENVIAR', 'flex flex-wrap w-full gap-2  justify-between': varSelectedStatusDocument == 'ACEPTADA' }">
                             <div class="relative flex items-center w-full md:w-2/12 ml-2 ">
-                                <label>Total: $ {{ formatNumber(totalSelectedDocuments) }} {{ (selectedDocuments.length) ? '(' + selectedDocuments.length + ')' : '' }}</label>
+                                <label>Total: $ {{ formatNumber(totalSelectedDocuments) }} {{ (selectedDocuments.length)
+                        ? '(' + selectedDocuments.length + ')' : '' }}</label>
                             </div>
 
-                            <div class="relative flex items-center w-fit " v-if="selectedDocuments.length &&  varSelectedStatusDocument == 'POR ENVIAR'">
+                            <div class="relative flex items-center w-fit "
+                                v-if="selectedDocuments.length && varSelectedStatusDocument == 'POR ENVIAR'">
                                 <button @click="sendSelectedDocuments"
                                     class="relative w-full md:w-30 h-6 overflow-hidden text-xs rounded-lg bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
                                     <span class="relative flex gap-1 px-2 text-black">
                                         <img :src="SendInvoiceIon" class="w-4 h-4 self-center" />
-                                        <p class="self-center font-bold text-white group-hover:text-white">{{ statusSelectedDocuments ? 'Enviando...' : 'Enviar Seleccionados' }}</p>
+                                        <p class="self-center font-bold text-white group-hover:text-white">{{
+                        statusSelectedDocuments ? 'Enviando...' : 'Enviar Seleccionados' }}</p>
                                     </span>
                                 </button>
                             </div>
-                            
+
                             <div class="relative flex  w-fit items-center " v-if="selectedDocuments.length > 0">
                                 <button @click="downloadSelectedDocuemnts"
                                     class="relative overflow-hidden text-xs rounded-lg shadow w-fit md:w-22 bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group h-6">
                                     <span class="relative flex gap-1 px-2 text-white font-bold">
                                         <img :src="FilePdfIon" class="w-4 h-4 self-center" />
-                                        <p font-bold class="self-center group-hover:text-white">Descargar Seleccionados</p>
+                                        <p font-bold class="self-center group-hover:text-white">Descargar Seleccionados
+                                        </p>
                                     </span>
                                 </button>
                             </div>
-                            <div class="relative flex items-center w-full md:w-2/12 my-[2px] " v-if="varSelectedStatusDocument == 'ACEPTADA'">
+                            <div class="relative flex items-center w-full md:w-2/12 my-[2px] "
+                                v-if="varSelectedStatusDocument == 'ACEPTADA'">
                                 <button @click="generateCsv" v-if="DataDocument?.length"
                                     class="relative w-fit md:w-30 h-6 overflow-hidden text-xs rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
                                     <span class="relative flex gap-1 px-2 text-white group-hover:text-white">
@@ -683,7 +663,8 @@ onMounted(async () => {
                                 </button>
                             </div>
 
-                            <div class="flex w-full mt-[3px] md:w-auto min-w-[200px] max-w-[26rem] justify-between border border-solid rounded-lg border-[#979494] h-6 " v-if="varSelectedStatusDocument == 'POR ENVIAR'">
+                            <div class="flex w-full mt-[3px] md:w-auto min-w-[200px] max-w-[26rem] justify-between border border-solid rounded-lg border-[#979494] h-6 "
+                                v-if="varSelectedStatusDocument == 'POR ENVIAR'">
                                 <input id="file-upload" type="file" class="hidden" @change="handleFileChange"
                                     accept=".txt" ref="fileBulkInput" />
                                 <label for="file-upload"
@@ -695,17 +676,20 @@ onMounted(async () => {
                                 </label>
                             </div>
 
-                            <div class="relative flex items-center w-full md:w-2/12 h-6 mt-[3px]" v-if="statuFileBulkInput">
+                            <div class="relative flex items-center w-full md:w-2/12 h-6 mt-[3px]"
+                                v-if="statuFileBulkInput">
                                 <button @click="uploadBulkFile"
                                     class="relative w-full md:w-30 h-6 overflow-hidden text-xs rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
                                     <span class="relative flex gap-1 px-2 text-white group-hover:text-white">
                                         <img :src="SendInvoiceIon" class="w-4 h-4 self-center" />
-                                        <p class="self-center font-bold">{{ statuSendFileBulk ? 'Enviando Facturas ...': 'Enviar archivo importado' }}</p>
+                                        <p class="self-center font-bold">{{ statuSendFileBulk ? 'Enviando Facturas ...' :
+                        'Enviar archivo importado' }}</p>
                                     </span>
                                 </button>
                             </div>
 
-                            <div class="relative w-full md:w-auto items-center mt-[3px] " v-if="varSelectedStatusDocument == 'POR ENVIAR' && selectedDocuments.length > 0">
+                            <div class="relative w-full md:w-auto items-center mt-[3px] "
+                                v-if="varSelectedStatusDocument == 'POR ENVIAR' && selectedDocuments.length > 0">
                                 <button @click.prevent="openModalChangeDate()"
                                     class="relative overflow-hidden text-xs rounded-lg shadow w-full md:w-22 bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group  h-6">
                                     <span class="relative flex gap-1 px-2 text-white font-bold">
@@ -714,19 +698,36 @@ onMounted(async () => {
                                     </span>
                                 </button>
                             </div>
-                        </div>  
+                        </div>
 
                         <table class="min-w-full divide-y divide-gray-200 ">
                             <thead class="bg-blue-700 text-[13px]">
                                 <tr>
-                                    <th></th>
+                                    <th>
+                                        <div class="ml-2">
+                                            <div
+                                                class="relative flex items-left justify-center flex-shrink-0 w-3 h-3 bg-gray-200 rounded-lg">
+                                                <input type="checkbox" class="checkbox" @change="SelectAllItems()"
+                                                    id="selectAllCheckbox">
+                                                <div class="hidden text-white bg-indigo-700 rounded-sm check-icon">
+                                                    <svg class="icon icon-tabler icon-tabler-check"
+                                                        xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                        fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path stroke="none" d="M0 0h24v24H0z"></path>
+                                                        <path d="M5 12l5 5l10 -10"></path>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </th>
                                     <th scope="col" class="px-2 py-1 text-left whitespace-nowrap text-white">
                                         <div class="flex gap-1 justify-left">
                                             <img :src="calendarIon" class="self-left w-6 h-6" />
                                             Fecha Emision
                                             <button @click="sortData('date_issue')">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                                    stroke="currentColor" class="w-4 h-4">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                    stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         d="M12 4.5l4 4H8l4-4zm0 15l-4-4h8l-4 4z" />
                                                 </svg>
@@ -736,8 +737,8 @@ onMounted(async () => {
                                     <th scope="col" class="px-12 py-1 font-normal text-center text-white">
                                         Cliente
                                         <button @click="sortData('customer')">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                                stroke="currentColor" class="w-4 h-4">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
                                                     d="M12 4.5l4 4H8l4-4zm0 15l-4-4h8l-4 4z" />
                                             </svg>
@@ -746,8 +747,8 @@ onMounted(async () => {
                                     <th scope="col" class="px-12 py-1 font-normal text-center text-white">
                                         Documento
                                         <button @click="sortData('number')">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                                stroke="currentColor" class="w-4 h-4">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
                                                     d="M12 4.5l4 4H8l4-4zm0 15l-4-4h8l-4 4z" />
                                             </svg>
@@ -756,8 +757,8 @@ onMounted(async () => {
                                     <th scope="col" class="px-4 py-1 font-normal text-center text-white">
                                         Valor documento
                                         <button @click="sortData('total')">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                                stroke="currentColor" class="w-4 h-4">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
                                                     d="M12 4.5l4 4H8l4-4zm0 15l-4-4h8l-4 4z" />
                                             </svg>
@@ -772,10 +773,16 @@ onMounted(async () => {
                                 <tr v-for="(document, d) in filterDocumentDate" :key="d" class="hover:bg-[#f3b8b0eb]">
                                     <td class="px-1 py-2 whitespace-nowrap">
                                         <div class="ml-1">
-                                            <div class="relative flex items-left justify-center flex-shrink-0 w-3 h-3 bg-gray-200 rounded-sm">
-                                                <input type="checkbox" class="checkbox" @change="toggleSelectedDocuments(document)" ref="checkboxSelectedDocuments"> 
+                                            <div
+                                                class="relative flex items-left justify-center flex-shrink-0 w-3 h-3 bg-gray-200 rounded-sm">
+                                                <input type="checkbox" class="checkbox"
+                                                    @change="toggleSelectedDocuments(document)"
+                                                    ref="checkboxSelectedDocuments">
                                                 <div class="hidden text-white bg-indigo-700 rounded-sm check-icon">
-                                                    <svg class="icon icon-tabler icon-tabler-check" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                    <svg class="icon icon-tabler icon-tabler-check"
+                                                        xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                        fill="none" stroke-linecap="round" stroke-linejoin="round">
                                                         <path stroke="none" d="M0 0h24v24H0z"></path>
                                                         <path d="M5 12l5 5l10 -10"></path>
                                                     </svg>
@@ -785,7 +792,8 @@ onMounted(async () => {
                                     </td>
                                     <td class="  whitespace-nowrap max-w-sm text-center ">
                                         <div class="flex gap-1 justify-left">
-                                            <div class="self-left px-1 py-1 font-bold text-blue-900 bg-blue-100 rounded">
+                                            <div
+                                                class="self-left px-1 py-1 font-bold text-blue-900 bg-blue-100 rounded">
                                                 {{ document.date_issue }}
                                             </div>
                                         </div>
@@ -801,14 +809,14 @@ onMounted(async () => {
                                             <p class="font-bold text-gray-900">
                                                 {{ document.prefix }}{{ document.number }}<br />
                                                 {{ document.type_document_id == 1 ? 'Factura venta nacional' :
-                document.type_document_id == 2 ? 'Factura Exportacion' :
-                    document.type_document_id == 3 ? 'Factura contingencia' :
-                        document.type_document_id == 4 ? 'Nota credito' :
-                            document.type_document_id == 5 ? 'Nota debito' :
-                                document.type_document_id == 11 ? 'Documento soporte' :
-                                    document.type_document_id == 12 ? 'Factura venta tipo-04' :
-                                        document.type_document_id == 13 ? 'Ajuste Documento soporte' :
-                                            '' }}
+                        document.type_document_id == 2 ? 'Factura Exportacion' :
+                            document.type_document_id == 3 ? 'Factura contingencia' :
+                                document.type_document_id == 4 ? 'Nota credito' :
+                                    document.type_document_id == 5 ? 'Nota debito' :
+                                        document.type_document_id == 11 ? 'Documento soporte' :
+                                            document.type_document_id == 12 ? 'Factura venta tipo-04' :
+                                                document.type_document_id == 13 ? 'Ajuste Documento soporte' :
+                                                    '' }}
                                             </p>
                                         </div>
                                     </td>
@@ -822,10 +830,12 @@ onMounted(async () => {
                                     <td class="py-[8px] text-center whitespace-nowrap">
                                         <div class="flex flex-wrap gap-2 justify-center">
 
-                                            <a :href="`${apiUrl}/api/download/${document.company_identification_number}/${document.pdf}`" target="__blank">
+                                            <a :href="`${apiUrl}/api/download/${document.company_identification_number}/${document.pdf}`"
+                                                target="__blank">
                                                 <img :src="FilePdfIon" class="w-8 h-8 self-center -mt-1 " />
                                             </a>
-                                            <a :href="`${apiUrl}/api/download/${document.company_identification_number}/${document.xml}`" target="__blank">
+                                            <a :href="`${apiUrl}/api/download/${document.company_identification_number}/${document.xml}`"
+                                                target="__blank">
                                                 <img :src="FileXmlIon" class="w-8 h-8 self-center -mt-1 " />
                                             </a>
                                             <button @click="downloadJsonFile(document)">
@@ -833,10 +843,13 @@ onMounted(async () => {
                                             </button>
 
                                             <div class="px-1 py-2 text-center whitespace-nowrap">
-                                                <button @click.prevent="openModalSendEmail(document)" class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow w-fit sm:w-22 group -mt-5 ">
-                                                    <div class="absolute inset-0 w-3 bg-orange-400 transition-all duration-[250ms] ease-out group-hover:w-full">
+                                                <button @click.prevent="openModalSendEmail(document)"
+                                                    class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow w-fit sm:w-22 group -mt-5 ">
+                                                    <div
+                                                        class="absolute inset-0 w-3 bg-orange-400 transition-all duration-[250ms] ease-out group-hover:w-full">
                                                     </div>
-                                                    <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                                    <span
+                                                        class="relative flex gap-1 px-2 text-black group-hover:text-white">
                                                         <img :src="sendMailIon" class="w-4 h-4">
                                                         <p font-bold class="self-center hidden sm:block">Correo</p>
                                                     </span>
@@ -845,23 +858,34 @@ onMounted(async () => {
 
                                             <div v-if="document.state_document_id == 1"
                                                 :class="{ 'flex justify-center gap-1 px-2 py-1 font-normal rounded-full text-black bg-emerald-100/60 w-fit self-center -mt-2  ': document.state_document_id == 1, 'flex gap-1 px-2 py-1 font-normal rounded-full text-black bg-red-100/60 w-fit self-center ': document.state_document_id == 0 }">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 20 20" fill="#02B126">
-                                                    <path d="M9.16667 2.5L16.6667 10C17.0911 10.4745 17.0911 11.1922 16.6667 11.6667L11.6667 16.6667C11.1922 17.0911 10.4745 17.0911 10 16.6667L2.5 9.16667V5.83333C2.5 3.99238 3.99238 2.5 5.83333 2.5H9.16667" stroke="#52525B" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></path>
-                                                    <circle cx="7.50004" cy="7.49967" r="1.66667" stroke="#52525B" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></circle>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                                    viewBox="0 0 20 20" fill="#02B126">
+                                                    <path
+                                                        d="M9.16667 2.5L16.6667 10C17.0911 10.4745 17.0911 11.1922 16.6667 11.6667L11.6667 16.6667C11.1922 17.0911 10.4745 17.0911 10 16.6667L2.5 9.16667V5.83333C2.5 3.99238 3.99238 2.5 5.83333 2.5H9.16667"
+                                                        stroke="#52525B" stroke-width="1.25" stroke-linecap="round"
+                                                        stroke-linejoin="round"></path>
+                                                    <circle cx="7.50004" cy="7.49967" r="1.66667" stroke="#52525B"
+                                                        stroke-width="1.25" stroke-linecap="round"
+                                                        stroke-linejoin="round"></circle>
                                                 </svg>
-                                                <p class="text-white bg-green-700 w-fit h-fit py-[1px] px-[2px] text-xs rounded-lg">
+                                                <p
+                                                    class="text-white bg-green-700 w-fit h-fit py-[1px] px-[2px] text-xs rounded-lg">
                                                     ACEPTADA
                                                 </p>
                                             </div>
 
                                             <div v-else class="px-1 py-2 text-center whitespace-nowrap -mt-2">
                                                 <div class="relative">
-                                                    <button @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)"
+                                                    <button
+                                                        @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)"
                                                         class="relative w-fit sm:w-22 h-6 overflow-hidden text-xs bg-white rounded-lg shadow group">
-                                                        <div class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
-                                                        <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
+                                                        <div
+                                                            class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
+                                                        <span
+                                                            class="relative flex gap-1 px-2 text-black group-hover:text-white">
                                                             <img :src="SendInvoiceIon" class="w-4 h-4" />
-                                                            <p class="self-center font-bold hidden sm:block">{{ document.isSend == true ? 'Enviando...' : 'Enviar' }}</p>
+                                                            <p class="self-center font-bold hidden sm:block">{{ document.isSend == true ? 'Enviando...' : 'Enviar' }}
+                                                            </p>
                                                         </span>
                                                     </button>
                                                 </div>
@@ -878,7 +902,8 @@ onMounted(async () => {
         <!-- footer -->
         <div class=" flex flex-col sm:flex-row sm:items-center sm:justify-between  ">
             <div class="text-sm text-gray-500">
-                Reg-<span class="font-medium text-gray-700">{{ pagination.from }} al {{ pagination.to }} de  {{ pagination.total }}</span>
+                Reg-<span class="font-medium text-gray-700">{{ pagination.from }} al {{ pagination.to }} de {{
+                        pagination.total }}</span>
             </div>
             <div class="w-full sm:w-auto max-w-sm mx-auto flex items-center ">
                 <label class="mr-2">RegxPág:</label>
@@ -901,14 +926,16 @@ onMounted(async () => {
             </div>
             <div class="flex justify-end items-center mt-4 gap-x-2 sm:mt-0 w-full sm:w-auto">
                 <button @click.prevent="getDataLogin(pagination.first_page_url)"
-                        :disabled="pagination.prev_page_url == null"
-                        class="flex items-center justify-center w-8 h-8 text-sm transition-colors duration-200 bg-white border rounded-full hover:bg-gray-100 disabled:opacity-50" title="Primera Pagina">
-                        <img :src="FirstPageIon" class="w-8 h-9" />
+                    :disabled="pagination.prev_page_url == null"
+                    class="flex items-center justify-center w-8 h-8 text-sm transition-colors duration-200 bg-white border rounded-full hover:bg-gray-100 disabled:opacity-50"
+                    title="Primera Pagina">
+                    <img :src="FirstPageIon" class="w-8 h-9" />
                 </button>
 
                 <button @click.prevent="getDataLogin(pagination.prev_page_url)"
-                        :disabled="pagination.prev_page_url == null"
-                        class="flex items-center justify-center w-8 h-8 text-sm transition-colors duration-200 bg-white border rounded-full hover:bg-gray-100 disabled:opacity-50" title="Pagina Anterior">
+                    :disabled="pagination.prev_page_url == null"
+                    class="flex items-center justify-center w-8 h-8 text-sm transition-colors duration-200 bg-white border rounded-full hover:bg-gray-100 disabled:opacity-50"
+                    title="Pagina Anterior">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-5 h-5">
                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -917,8 +944,9 @@ onMounted(async () => {
                 </button>
 
                 <button @click.prevent="getDataLogin(pagination.next_page_url)"
-                        :disabled="pagination.next_page_url == null"
-                        class="flex items-center justify-center w-8 h-8 text-sm transition-colors duration-200 bg-white border rounded-full hover:bg-gray-100 disabled:opacity-50" title="Pagina Siguiente">
+                    :disabled="pagination.next_page_url == null"
+                    class="flex items-center justify-center w-8 h-8 text-sm transition-colors duration-200 bg-white border rounded-full hover:bg-gray-100 disabled:opacity-50"
+                    title="Pagina Siguiente">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-5 h-5">
                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -927,9 +955,10 @@ onMounted(async () => {
                 </button>
 
                 <button @click.prevent="getDataLogin(pagination.last_page_url)"
-                        :disabled="pagination.next_page_url == null"
-                        class="flex items-center justify-center w-8 h-8 text-sm transition-colors duration-200 bg-white border rounded-full hover:bg-gray-100 disabled:opacity-50" title="Ultima Pagina">
-                        <img :src="LastPageIon" class="w-8 h-9" />
+                    :disabled="pagination.next_page_url == null"
+                    class="flex items-center justify-center w-8 h-8 text-sm transition-colors duration-200 bg-white border rounded-full hover:bg-gray-100 disabled:opacity-50"
+                    title="Ultima Pagina">
+                    <img :src="LastPageIon" class="w-8 h-9" />
                 </button>
             </div>
         </div>
@@ -939,7 +968,8 @@ onMounted(async () => {
                     <svg class="w-6 h-6 text-red-500 fill-current" role="button" xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20">
                         <title>Close</title>
-                        <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
+                        <path
+                            d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
                     </svg>
                 </span>
             </template>
@@ -963,7 +993,8 @@ onMounted(async () => {
                     <svg class="w-6 h-6 text-red-500 fill-current" role="button" xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20">
                         <title>Close</title>
-                        <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
+                        <path
+                            d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
                     </svg>
                 </span>
             </template>

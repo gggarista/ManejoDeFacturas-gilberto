@@ -2,7 +2,6 @@
 import { Ref, ref, computed } from 'vue'
 import offIcon from '../assets/logout2.png'
 import whatsappL from '../assets/whatsapp.svg'
-import fondo from '@/assets/fondoLogin.jpeg'
 import router from '@/plugins/routes/routes'
 //import useLoginStore from '@/stores/loginStore'
 import { AES, enc } from 'crypto-js';

@@ -34,36 +34,36 @@ const logout: any = () => {
 
 <template>
   <!-- Header -->
-  <div id="container" class="w-full h-18 max-h-10 bg-[#cecece] p-1 shadow-sm" v-if="$route.name != 'login.page' ">
-    <div id="header_wrapper" class="h-full justify-between w-full  text-center grid grid-cols-12 gap-1 sm:grid-cols-6 lg:grid-cols-12 max-[640px]:grid-cols-3  p-1">
+  <div id="container" class="w-full h-10 max-h-8 bg-green-200  shadow-sm" v-if="$route.name != 'login.page' ">
+    <div id="header_wrapper" class=" text-center ">
       <div class="justify-between  p-1 w-full col-span-1 lg:col-span-1 sm:col-span-1 max-[640px]:col-span-1 flex">
         <button  class=" hover:cursor-pointer "  @click.prevent="logout">
-          <img :src="offIcon" class="w-8 h-8 top-1 absolute">
+          <img :src="offIcon" class="w-6 h-6 top-1 absolute">
         </button>
       </div>
-      <div class="justify-between  p-1 w-full col-span-7 lg:col-span-7 sm:col-span-3 max-[640px]:col-span-2">
-        <h2 class="text-base sm:text-lg md:text-xl font-medium text-gray-800 break-words sm:whitespace-normal">
-        ARISTA SOFTWARE - CONSULTAR DOCUMENTOS - {{ CompanieName }}
-      </h2>
+      <div class="justify-between   w-full col-span-7 lg:col-span-7 sm:col-span-3 max-[640px]:col-span-2">
+        <p class="text-sm font-medium text-gray-800 break-words sm:whitespace-normal">
+          ARISTA SOFTWARE - CONSULTAR DOCUMENTOS - {{ CompanieName }}
+        </p>
       </div>
     </div>
   </div>
   <!-- Body -->
 
   <main> 
-    <div class="min-h-screen mt-1">
-      <div class="h-full">
+    <div class="min-h-screen bg-gray-100">
+      <div class="h-full ">
         <router-view />
+        <!-- footer  -->      
+        <div class="h-8 max-h-8 flex items-center justify-center overflow-hidden  bg-green-200 my-2  " v-if="$route.name != 'login.page' ">
+          <div class="h-full">
+            <a href="https://aristasoftware.com" target="_blank" class="text-red-800">https://aristasoftware.com</a><!-- Contenido principal aquí -->
+          </div>
+        </div>
       </div>
     </div>
   </main>
 
-  <!-- footer  -->
-  <div class="h-8 max-h-8 flex items-center justify-center overflow-hidden  bg-[#cecece] " v-if="$route.name != 'login.page' ">
-    <div class="h-full">
-      <a href="https://aristasoftware.com" target="_blank" class="text-red-800">httpss://aristasoftware.com</a><!-- Contenido principal aquí -->
-    </div>
-  </div>
 </template>
 
 <style scoped></style>

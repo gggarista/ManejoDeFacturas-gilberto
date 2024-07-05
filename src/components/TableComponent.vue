@@ -599,11 +599,11 @@ onMounted(async () => {
 </script>
 
 <template>
-    <section class="container px-4 mx-auto">
+    <section class="container px-4 mx-auto  ">
         <!-- cabecera -->
-        <div class="flex flex-col md:flex-row items-center w-full gap-2 mt-1 ">
+        <div class="flex flex-col md:flex-row items-center w-full gap-2 ">
             <div class="w-fit">
-                <select @change="getDataLogin(firstPageLogin)" id="seleccionar" :class="{ 'block p-2 w-full border border-gray-500 rounded-xl bg-green-700 text-white': varSelectedStatusDocument == 'ACEPTADA', 'block  p-2 border border-gray-500 rounded-xl bg-red-700 text-white w-full ': varSelectedStatusDocument == 'POR ENVIAR' }"
+                <select @change="getDataLogin(firstPageLogin)" id="seleccionar" :class="{ 'block p-1 w-full border border-gray-500 rounded-xl bg-green-700 text-white': varSelectedStatusDocument == 'ACEPTADA', 'block  p-1 border border-gray-500 rounded-xl bg-red-700 text-white w-full ': varSelectedStatusDocument == 'POR ENVIAR' }"
                     v-model="varSelectedStatusDocument">
                     <option value="ACEPTADA" class="text-white bg-green-700">ACEPTADA</option>
                     <option value="POR ENVIAR" class="text-white bg-red-700" selected>POR ENVIAR</option>
@@ -611,7 +611,7 @@ onMounted(async () => {
                 </select>
             </div>
             <div class="w-full md:w-1/5">
-                <vue-tailwind-datepicker :formatter="formatter" v-model="dateValue" class="w-full h-[38px] border border-gray-500 rounded-lg placeholder-gray-600/70" />
+                <vue-tailwind-datepicker :formatter="formatter" v-model="dateValue" class="w-full h-[30px] border border-gray-500 rounded-lg placeholder-gray-600/70" />
             </div>
             <div class="relative flex items-center w-full md:w-auto mt-1 md:mt-0">
                 <span class="absolute left-3">
@@ -623,7 +623,7 @@ onMounted(async () => {
                 </span>
                 <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por Cliente"
                     v-model="varBuscadorCliente"
-                    class="block w-full py-1.5 pr-5 pl-10 text-gray-700 bg-white border border-gray-500 rounded-lg placeholder-gray-600/70 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
+                    class="block w-full h-[30px] pr-5 pl-10 text-gray-700 bg-white border border-gray-500 rounded-lg placeholder-gray-600/70 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
             <div class="relative flex items-center w-full md:w-auto mt-1 md:mt-0">
                 <span class="absolute left-3">
@@ -635,7 +635,7 @@ onMounted(async () => {
                 </span>
                 <input @change="getDataLogin(firstPageLogin)" type="text" placeholder="Buscar por documento"
                     v-model="varBuscadorNormal"
-                    class="block w-full py-1.5 pr-5 pl-10 text-gray-700 bg-white border border-gray-500 rounded-lg placeholder-gray-400/70 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
+                    class="block w-full h-[30px] pr-5 pl-10 text-gray-700 bg-white border border-gray-500 rounded-lg placeholder-gray-400/70 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
             <svg v-if="isLoading"  class="animate-spin  mr-3 h-full w-8 text-red-300 ml-5 self-center" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -644,19 +644,19 @@ onMounted(async () => {
         </div>
 
         <!-- body -->
-        <div class="flex flex-col mt-2">
-            <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+        <div class="flex flex-col ">
+            <div class="-mx-4   overflow-x-auto sm:-mx-6 lg:-mx-8">
                 <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
                     <div class="overflow-hidden border border-gray-200 md:rounded-lg">    
 
-                        <div :class="{'flex flex-wrap w-full gap-2 mt-1 mb-2':varSelectedStatusDocument == 'POR ENVIAR', 'flex flex-wrap w-full gap-2 mt-1 mb-2 justify-between': varSelectedStatusDocument == 'ACEPTADA' }">
-                            <div class="relative flex items-center w-full md:w-2/12 mt-1 md:mt-0">
+                        <div :class="{'flex flex-wrap w-full gap-2':varSelectedStatusDocument == 'POR ENVIAR', 'flex flex-wrap w-full gap-2  justify-between': varSelectedStatusDocument == 'ACEPTADA' }">
+                            <div class="relative flex items-center w-full md:w-2/12 ml-2 ">
                                 <label>Total: $ {{ formatNumber(totalSelectedDocuments) }} {{ (selectedDocuments.length) ? '(' + selectedDocuments.length + ')' : '' }}</label>
                             </div>
 
-                            <div class="relative flex items-center w-full md:w-2/12 mt-1 md:mt-0" v-if="selectedDocuments.length &&  varSelectedStatusDocument == 'POR ENVIAR'">
+                            <div class="relative flex items-center w-fit " v-if="selectedDocuments.length &&  varSelectedStatusDocument == 'POR ENVIAR'">
                                 <button @click="sendSelectedDocuments"
-                                    class="relative w-full md:w-30 h-10 overflow-hidden text-xs rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
+                                    class="relative w-full md:w-30 h-6 overflow-hidden text-xs rounded-lg bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
                                     <span class="relative flex gap-1 px-2 text-black">
                                         <img :src="SendInvoiceIon" class="w-4 h-4 self-center" />
                                         <p class="self-center font-bold text-white group-hover:text-white">{{ statusSelectedDocuments ? 'Enviando...' : 'Enviar Seleccionados' }}</p>
@@ -664,18 +664,18 @@ onMounted(async () => {
                                 </button>
                             </div>
                             
-                            <div class="relative flex items-center w-full md:w-2/12 mt-1 md:mt-0" v-if="selectedDocuments.length > 0">
+                            <div class="relative flex  w-fit items-center " v-if="selectedDocuments.length > 0">
                                 <button @click="downloadSelectedDocuemnts"
-                                    class="relative overflow-hidden text-xs rounded-lg shadow w-fit md:w-22 bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group h-10">
+                                    class="relative overflow-hidden text-xs rounded-lg shadow w-fit md:w-22 bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group h-6">
                                     <span class="relative flex gap-1 px-2 text-white font-bold">
-                                        <img :src="FilePdfIon" class="w-6 h-6 self-center" />
+                                        <img :src="FilePdfIon" class="w-4 h-4 self-center" />
                                         <p font-bold class="self-center group-hover:text-white">Descargar Seleccionados</p>
                                     </span>
                                 </button>
                             </div>
-                            <div class="relative flex items-center w-full md:w-2/12 mt-1 md:mt-0" v-if="varSelectedStatusDocument == 'ACEPTADA'">
+                            <div class="relative flex items-center w-full md:w-2/12 my-[2px] " v-if="varSelectedStatusDocument == 'ACEPTADA'">
                                 <button @click="generateCsv" v-if="DataDocument?.length"
-                                    class="relative w-fit md:w-30 h-10 overflow-hidden text-xs rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
+                                    class="relative w-fit md:w-30 h-6 overflow-hidden text-xs rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
                                     <span class="relative flex gap-1 px-2 text-white group-hover:text-white">
                                         <img :src="CSVFile" class="w-4 h-4" />
                                         <p class="self-center font-bold">Exportar</p>
@@ -683,11 +683,11 @@ onMounted(async () => {
                                 </button>
                             </div>
 
-                            <div class="flex w-full md:w-auto min-w-[200px] max-w-[26rem] justify-between border border-solid rounded-lg border-[#979494]" v-if="varSelectedStatusDocument == 'POR ENVIAR'">
+                            <div class="flex w-full mt-[3px] md:w-auto min-w-[200px] max-w-[26rem] justify-between border border-solid rounded-lg border-[#979494] h-6 " v-if="varSelectedStatusDocument == 'POR ENVIAR'">
                                 <input id="file-upload" type="file" class="hidden" @change="handleFileChange"
                                     accept=".txt" ref="fileBulkInput" />
                                 <label for="file-upload"
-                                    class="rounded bg-black max-h-[90%] h-[35px] ml-1 py-2 px-4 text-center align-middle font-sans text-xs font-bold capitalize text-white cursor-pointer hover:bg-[#cecece] flex self-center">
+                                    class="rounded bg-black max-h-[90%] h-[30px] ml-1  px-4 text-center align-middle font-sans text-xs font-bold capitalize text-white cursor-pointer hover:bg-[#cecece] flex self-center">
                                     <p class="self-center">Importar archivo</p>
                                 </label>
                                 <label class="self-center select-none text-[11px] px-2 text-blue-600 font-bold">
@@ -695,9 +695,9 @@ onMounted(async () => {
                                 </label>
                             </div>
 
-                            <div class="relative flex items-center w-full md:w-2/12 mt-1 md:mt-0" v-if="statuFileBulkInput">
+                            <div class="relative flex items-center w-full md:w-2/12 h-6 mt-[3px]" v-if="statuFileBulkInput">
                                 <button @click="uploadBulkFile"
-                                    class="relative w-full md:w-30 h-10 overflow-hidden text-xs rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
+                                    class="relative w-full md:w-30 h-6 overflow-hidden text-xs rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
                                     <span class="relative flex gap-1 px-2 text-white group-hover:text-white">
                                         <img :src="SendInvoiceIon" class="w-4 h-4 self-center" />
                                         <p class="self-center font-bold">{{ statuSendFileBulk ? 'Enviando Facturas ...': 'Enviar archivo importado' }}</p>
@@ -705,9 +705,9 @@ onMounted(async () => {
                                 </button>
                             </div>
 
-                            <div class="relative w-full md:w-auto" v-if="varSelectedStatusDocument == 'POR ENVIAR' && selectedDocuments.length > 0">
+                            <div class="relative w-full md:w-auto items-center mt-[3px] " v-if="varSelectedStatusDocument == 'POR ENVIAR' && selectedDocuments.length > 0">
                                 <button @click.prevent="openModalChangeDate()"
-                                    class="relative overflow-hidden text-xs rounded-lg shadow w-full md:w-22 bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group mt-1 h-10">
+                                    class="relative overflow-hidden text-xs rounded-lg shadow w-full md:w-22 bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group  h-6">
                                     <span class="relative flex gap-1 px-2 text-white font-bold">
                                         <img :src="calendarIon" class="w-5 h-5 self-center" />
                                         <p font-bold class="self-center group-hover:text-white">Cambiar Fecha</p>
@@ -720,7 +720,7 @@ onMounted(async () => {
                             <thead class="bg-blue-700 text-[13px]">
                                 <tr>
                                     <th></th>
-                                    <th scope="col" class="px-2 py-2 text-left whitespace-nowrap text-white">
+                                    <th scope="col" class="px-2 py-1 text-left whitespace-nowrap text-white">
                                         <div class="flex gap-1 justify-left">
                                             <img :src="calendarIon" class="self-left w-6 h-6" />
                                             Fecha Emision
@@ -733,7 +733,7 @@ onMounted(async () => {
                                             </button>
                                         </div>
                                     </th>
-                                    <th scope="col" class="px-12 py-3 font-normal text-center text-white">
+                                    <th scope="col" class="px-12 py-1 font-normal text-center text-white">
                                         Cliente
                                         <button @click="sortData('customer')">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -743,7 +743,7 @@ onMounted(async () => {
                                             </svg>
                                         </button>
                                     </th>
-                                    <th scope="col" class="px-12 py-3 font-normal text-center text-white">
+                                    <th scope="col" class="px-12 py-1 font-normal text-center text-white">
                                         Documento
                                         <button @click="sortData('number')">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -753,7 +753,7 @@ onMounted(async () => {
                                             </svg>
                                         </button>
                                     </th>
-                                    <th scope="col" class="px-4 py-3 font-normal text-center text-white">
+                                    <th scope="col" class="px-4 py-1 font-normal text-center text-white">
                                         Valor documento
                                         <button @click="sortData('total')">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -763,7 +763,7 @@ onMounted(async () => {
                                             </svg>
                                         </button>
                                     </th>
-                                    <th scope="col" class="px-12 py-3 font-normal text-center text-white">
+                                    <th scope="col" class="px-12 py-1 font-normal text-center text-white">
                                         Acciones
                                     </th>
                                 </tr>
@@ -834,7 +834,7 @@ onMounted(async () => {
 
                                             <div class="px-1 py-2 text-center whitespace-nowrap">
                                                 <button @click.prevent="openModalSendEmail(document)"
-                                                    class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow w-fit sm:w-22 group">
+                                                    class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow w-fit sm:w-22 group -mt-5 ">
                                                     <div class="absolute inset-0 w-3 bg-orange-400 transition-all duration-[250ms] ease-out group-hover:w-full">
                                                     </div>
                                                     <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
@@ -845,7 +845,7 @@ onMounted(async () => {
                                             </div>
 
                                             <div v-if="document.state_document_id == 1"
-                                                :class="{ 'flex justify-center gap-1 px-2 py-1 font-normal rounded-full text-black bg-emerald-100/60 w-fit self-center  ': document.state_document_id == 1, 'flex gap-1 px-2 py-1 font-normal rounded-full text-black bg-red-100/60 w-fit self-center ': document.state_document_id == 0 }">
+                                                :class="{ 'flex justify-center gap-1 px-2 py-1 font-normal rounded-full text-black bg-emerald-100/60 w-fit self-center -mt-2  ': document.state_document_id == 1, 'flex gap-1 px-2 py-1 font-normal rounded-full text-black bg-red-100/60 w-fit self-center ': document.state_document_id == 0 }">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 20 20" fill="#02B126">
                                                     <path d="M9.16667 2.5L16.6667 10C17.0911 10.4745 17.0911 11.1922 16.6667 11.6667L11.6667 16.6667C11.1922 17.0911 10.4745 17.0911 10 16.6667L2.5 9.16667V5.83333C2.5 3.99238 3.99238 2.5 5.83333 2.5H9.16667" stroke="#52525B" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></path>
                                                     <circle cx="7.50004" cy="7.49967" r="1.66667" stroke="#52525B" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></circle>
@@ -877,7 +877,7 @@ onMounted(async () => {
             </div>
         </div>
         <!-- footer -->
-        <div class="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div class=" flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div class="text-sm text-gray-500">
                 Reg-<span class="font-medium text-gray-700">{{ pagination.from }} al {{ pagination.to }} de  {{ pagination.total }}</span>
             </div>

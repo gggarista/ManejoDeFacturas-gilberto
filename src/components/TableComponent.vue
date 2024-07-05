@@ -212,7 +212,7 @@ const uploadBulkFile = () => {
 
                     await axios.post(`${apiUrl}/api/ubl2.1/invoice`, JSON.stringify(invoiceData), { headers: headers })
                     cantSuccess++;
-                    htmlResponse += "Enviada Exitosamente\n";
+                    toast("Enviada Exitosamente" +  invoiceData.prefix + invoiceData.number, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_CENTER, onClose: () => location.reload() }); // ToastOptions
                 });
 
                 Promise.all(promises)

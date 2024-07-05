@@ -2,6 +2,7 @@
 import { Ref, ref, computed } from 'vue'
 import offIcon from '../assets/logout2.png'
 import whatsappL from '../assets/whatsapp.svg'
+import pressPointerHand from '@/assets/RightpointerHand.png'
 import router from '@/plugins/routes/routes'
 //import useLoginStore from '@/stores/loginStore'
 import { AES, enc } from 'crypto-js';
@@ -45,7 +46,12 @@ const logout: any = () => {
         </p>
       </div>
 
-      <div class="justify-between  p-1 ">
+      <div class="justify-between  p-1 group relative">
+        <div class="absolute top-10 -left-24 z-40 bg-[#cecece] rounded-xl px-2 hidden group-hover:block  " >
+          <p class="text-white" >
+            Cerrar sesión 
+          </p>
+        </div>
         <button  class=" hover:cursor-pointer "  @click.prevent="logout">
           <img :src="offIcon" class="w-12 h-12 top-1 ">
         </button>
@@ -59,22 +65,32 @@ const logout: any = () => {
       <div class="h-full ">
         <router-view />
         <!-- footer  -->      
-        <div class="h-8 max-h-8 flex items-center justify-center overflow-hidden  bg-green-200 my-2  " v-if="$route.name != 'login.page' ">
-          <div class="h-full flex gap-2 ">
-            <a href="https://aristasoftware.com" target="_blank" class="text-red-800 self-center ">https://aristasoftware.com</a><!-- Contenido principal aquí -->
-            <a href="https://wa.me/573137746176" target="_blank" class="text-red-800 self-center flex gap-2">
+        <div class="flex items-center justify-center   bg-green-200 my-2 z-10 relative " v-if="$route.name != 'login.page' ">
+          <div class="h-full flex gap-2  ">
+            <a href="https://aristasoftware.com" target="_blank" class="text-red-800 self-center mr-20 ">https://aristasoftware.com</a>
+            <p class="self-center"  >Si desea comunicarse con un asesor via whatsapp, presione aqui </p>
+            <img :src="pressPointerHand" class="w-8 h-8" >
+            <a href="https://wa.me/573137746176" target="_blank" class="text-red-800 self-center flex gap-2 hover:text-blue-700  group z-10">
               <img :src="whatsappL" class="w-8 h-8">
               <p class="self-center">
-
                 +(57)3137746176
               </p>
+              <div class="absolute -top-7 z-40 bg-[#cecece] rounded-xl px-2 hidden group-hover:block  " >
+                <p class="text-white" >
+                  Presione aqui
+                </p>
+              </div>
             </a>
-            <a href="https://wa.me/573104148416" target="_blank" class="text-red-800 self-center flex gap-2">
+            <a href="https://wa.me/573104148416" target="_blank" class="text-red-800 self-center flex gap-2 hover:text-blue-700 group z-10">
               <img :src="whatsappL" class="w-8 h-8">
               <p class="self-center">
-
                 +(57)3104148416
               </p>
+              <div class="absolute -top-7 z-40 bg-[#cecece] rounded-xl px-2 hidden group-hover:block  " >
+                <p class="text-white" >
+                  Presione aqui
+                </p>
+              </div>
             </a>
           </div>
         </div>

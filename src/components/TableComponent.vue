@@ -79,6 +79,7 @@ const totalSelectedDocuments = computed(() => {
 
 const sortField: Ref<any> = ref('date_issue');
 const sortOrder: Ref<any> = ref('desc');
+const isLoading = ref(false);
     
 const toggleSelectedDocuments = (document: any) => {
     // Añadir o eliminar documentos de la selección
@@ -402,6 +403,8 @@ const GenerateOpcionDePaginas: any = (url: any = '') => {
 const getDataLogin: any = async (urlPAginate: any = null) => {
     try {
 
+        isLoading.value = true; // Muestra el spinner
+
         selectedDocuments.value = [];
         checkboxSelectedDocuments.value.forEach((checkbox: any) => {
             checkbox.checked = false;
@@ -467,6 +470,8 @@ const getDataLogin: any = async (urlPAginate: any = null) => {
 
     } catch (error) {
         console.log(error)
+    } finally {
+        isLoading.value = false; // Oculta el spinner
     }
 }
 const SendMail: any = async () => {
@@ -633,6 +638,7 @@ onMounted(async () => {
                     v-model="varBuscadorNormal"
                     class="block w-full py-1.5 pr-5 pl-10 text-gray-700 bg-white border border-gray-500 rounded-lg placeholder-gray-400/70 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
+            <div v-if="isLoading" class="spinner"><img src="@/assets/loading.gif" alt="Cargando..."></div>
         </div>
 
         <!-- body -->

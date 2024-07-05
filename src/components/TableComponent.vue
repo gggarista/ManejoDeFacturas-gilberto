@@ -89,14 +89,14 @@ const toggleSelectedDocuments = (document: any) => {
 };
 
 // Seleccionar o deseleccionar todos los elementos listados dinámicamente
-const SelectAllItems = () => {
-    const checkboxes = document.querySelectorAll('.checkbox');
-    const selectAllCheckbox: any = document.querySelector('#selectAllCheckbox');
+// const SelectAllItems = () => {
+//     const checkboxes = document.querySelectorAll('.checkbox');
+//     const selectAllCheckbox: any = document.querySelector('#selectAllCheckbox');
 
-    checkboxes.forEach((checkbox: any) => {
-        checkbox.checked = selectAllCheckbox.checked;
-    });
-}
+//     checkboxes.forEach((checkbox: any) => {
+//         checkbox.checked = selectAllCheckbox.checked;
+//     });
+// }
 
 const sendSelectedDocuments = () => {
     // Mostrar los IDs de los documentos seleccionados

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Ref, ref, computed } from 'vue'
 import { AES, enc } from 'crypto-js';
-import logo from '@/assets/ARISTA.png'
+import logo from '@/assets/logo3.jpeg'
 import { UserModel } from '@/interfaces/index'
 import axios from 'axios'
 import useLoginStore from '@/stores/loginStore'
@@ -96,12 +96,11 @@ const postLogiun: any = async () => {
 </script>
 <template>
     <section class="flex items-center justify-center min-h-screen  ">
-        <div class="flex flex-col  p-5 shadow-lg rounded-2xl ">
+        <div class="flex flex-col  p-5 shadow-lg shadow-gray-400 rounded-2xl w-3/12 ">
             <div class="flex justify-center">
-                <img :src="logo" class="self-center rounded-2xl w-3/12 h-6/12" alt="page img">
+                <img :src="logo" class="self-center rounded-2xl w-2/5 h-5/12" alt="page img">
             </div>
             <div class="px-5 ">
-                <h2 class="text-2xl font-bold text-[#002D74] text-center">CONSULTAR FACTURAS</h2>
                 <form class="mt-6">
                     <div>
                         <label class="block text-gray-700">Correo Electronico</label>

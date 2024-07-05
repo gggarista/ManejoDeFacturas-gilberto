@@ -210,9 +210,19 @@ const uploadBulkFile = () => {
                     //         // Maneja errores aquí si es necesario
                     //     });
 
-                    await axios.post(`${apiUrl}/api/ubl2.1/invoice`, JSON.stringify(invoiceData), { headers: headers })
-                    cantSuccess++;
-                    toast("Enviada Exitosamente" +  invoiceData.prefix + invoiceData.number, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_CENTER, onClose: () => location.reload() }); // ToastOptions
+                    let { data }: any = await axios.post(`${apiUrl}/api/ubl2.1/invoice`, JSON.stringify(invoiceData), { headers: headers })
+
+                    if (data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.isValid == true) {
+                        cantSuccess++;
+                        htmlResponse += " Enviada Exitosamente\n";
+                        toast(htmlResponse +" "+  invoiceData.prefix + invoiceData.number, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_RIGHT, onClose: () => location.reload() }); // ToastOptions
+                    } else {
+                        cantFail++;
+                        htmlResponse = " fallo\n";
+                        toast(htmlResponse + " " +  invoiceData.prefix + invoiceData.number, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_RIGHT, onClose: () => location.reload() }); // ToastOptions
+                    }
+                    
+                    
                 });
 
                 Promise.all(promises)
@@ -220,7 +230,7 @@ const uploadBulkFile = () => {
                         let htmlHeader = '<b>\nFacturas exitosas ' + cantSuccess + '</b>\n';
                         htmlHeader += '<b>Facturas error ' + cantFail + '</b>\n\n';
                         // Esto se ejecutará cuando todas las solicitudes Axios se completen
-                        toast(htmlHeader + htmlResponse, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_CENTER, onClose: () => location.reload() }); // ToastOptions
+                        toast(htmlHeader + htmlResponse, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_RIGHT, onClose: () => location.reload() }); // ToastOptions
 
                     })
                     .catch(error => {

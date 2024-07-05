@@ -599,7 +599,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <section class="container px-4 mx-auto  ">
+    <section class=" px-[20px]   mx-auto  ">
         <!-- cabecera -->
         <div class="flex flex-col md:flex-row items-center w-full gap-2 ">
             <div class="w-fit">
@@ -770,7 +770,7 @@ onMounted(async () => {
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200 text-[10px]">
                                 <tr v-for="(document, d) in filterDocumentDate" :key="d" class="hover:bg-[#f3b8b0eb]">
-                                    <td class="px-2 py-2 whitespace-nowrap">
+                                    <td class="px-1 py-2 whitespace-nowrap">
                                         <div class="ml-1">
                                             <div class="relative flex items-left justify-center flex-shrink-0 w-3 h-3 bg-gray-200 rounded-sm">
                                                 <input type="checkbox" class="checkbox" @change="toggleSelectedDocuments(document)" ref="checkboxSelectedDocuments"> 
@@ -783,20 +783,20 @@ onMounted(async () => {
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-2 py-2 text-left whitespace-nowrap">
+                                    <td class="  whitespace-nowrap max-w-sm text-center ">
                                         <div class="flex gap-1 justify-left">
                                             <div class="self-left px-1 py-1 font-bold text-blue-900 bg-blue-100 rounded">
                                                 {{ document.date_issue }}
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-2 text-center whitespace-nowrap">
+                                    <td class="text-center whitespace-nowrap">
                                         <div>
                                             <h4 class="font-bold text-black">{{ JSON.parse(document.client).name }}</h4>
                                             <p class="font-bold text-gray-900">{{ document.customer }}</p>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-2 text-center whitespace-nowrap">
+                                    <td class=" text-center whitespace-nowrap">
                                         <div>
                                             <p class="font-bold text-gray-900">
                                                 {{ document.prefix }}{{ document.number }}<br />
@@ -812,21 +812,21 @@ onMounted(async () => {
                                             </p>
                                         </div>
                                     </td>
-                                    <td class="px-4 py-2 text-center whitespace-nowrap">
+                                    <td class="text-center whitespace-nowrap">
                                         <div>
                                             <h4 class="text-black text-[14px]">
                                                 $ {{ formatNumber(document.total) }}
                                             </h4>
                                         </div>
                                     </td>
-                                    <td class="px-2 py-2 text-center whitespace-nowrap">
-                                        <div class="flex flex-wrap gap-5 justify-center">
+                                    <td class="py-[8px] text-center whitespace-nowrap">
+                                        <div class="flex flex-wrap gap-2 justify-center">
 
                                             <a :href="`${apiUrl}/api/download/${document.company_identification_number}/${document.pdf}`" target="__blank">
-                                                <img :src="FilePdfIon" class="w-8 h-8 self-center" />
+                                                <img :src="FilePdfIon" class="w-8 h-8 self-center -mt-1" />
                                             </a>
                                             <a :href="`${apiUrl}/api/download/${document.company_identification_number}/${document.xml}`" target="__blank">
-                                                <img :src="FileXmlIon" class="w-8 h-8 self-center" />
+                                                <img :src="FileXmlIon" class="w-8 h-8 self-center -mt-1" />
                                             </a>
                                             <button @click="downloadJsonFile(document)">
                                                 <img :src="FileJsonIon" class="w-8 h-8 self-center -mt-2" />
@@ -877,13 +877,13 @@ onMounted(async () => {
             </div>
         </div>
         <!-- footer -->
-        <div class=" flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div class=" flex flex-col sm:flex-row sm:items-center sm:justify-between  ">
             <div class="text-sm text-gray-500">
                 Reg-<span class="font-medium text-gray-700">{{ pagination.from }} al {{ pagination.to }} de  {{ pagination.total }}</span>
             </div>
-            <div class="w-full sm:w-auto max-w-md mx-auto flex items-center">
+            <div class="w-full sm:w-auto max-w-sm mx-auto flex items-center ">
                 <label class="mr-2">RegxPág:</label>
-                <select id="seleccionar" class="block w-full p-2 border border-gray-500 rounded-lg"
+                <select id="seleccionar" class="block w-full px-2 border border-gray-500 rounded-lg  "
                     @change="getDataLogin(firstPageLogin)" v-model="itemPerPageSelected">
                     <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in varitemPerPage"
                         :key="p">
@@ -892,7 +892,7 @@ onMounted(async () => {
                 </select>
             </div>
             <div class="w-full sm:w-auto max-w-md mx-auto">
-                <select id="seleccionar" class="block w-full p-2 border border-gray-500 rounded-lg"
+                <select id="seleccionar" class="block w-full px-2 border border-gray-500 rounded-lg"
                     @change="getDataLogin(paginaSelected)" v-model="paginaSelected">
                     <option :value="pagina" class="text-white bg-green-700" v-for="(pagina, p) in OpcionesPaginas"
                         :key="p">

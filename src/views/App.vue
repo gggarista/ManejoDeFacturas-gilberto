@@ -68,7 +68,7 @@ const logout: any = () => {
         <div class="flex items-center justify-center   bg-green-200 my-2 z-10 relative " v-if="$route.name != 'login.page' ">
           <div class="h-full flex gap-2  ">
             <a href="https://aristasoftware.com" target="_blank" class="text-red-800 self-center mr-20  hover:text-blue-700 ">https://aristasoftware.com</a>
-            <p class="self-center text-green-700 "  >Si desea comunicarse con un asesor via whatsapp, presione aqui </p>
+            <p class="self-center text-[#0c5b14] "  >Si desea comunicarse con un asesor via whatsapp, presione aqui </p>
             <img :src="pressPointerHand" class="w-8 h-8" >
             <a href="https://wa.me/573137746176" target="_blank" class="text-red-800 self-center flex gap-2 hover:text-blue-700  group z-10">
               <img :src="whatsappL" class="w-8 h-8">

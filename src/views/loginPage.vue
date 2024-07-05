@@ -22,12 +22,14 @@ const model: Ref<UserModel> = ref({
     pass: ''
 });
 
+const isLoading = ref(false);
+
 const store: any = useLoginStore()
 const secretKey: Ref<any> = ref('arista') // Cambia esto por tu clave secreta
 
 //---------- variables computed---------------------
 /**
- * variable para almacenar los datos del usuario conectado
+ * variable para almacenar los datos del usua           rio conectado
  */
 const dataLogin: any = computed({
     get() {
@@ -59,6 +61,7 @@ const CompanieName: any = computed({
  */
 const postLogiun: any = async () => {
     try {
+        isLoading.value = true;
         let { data } = await axios.post('/login-manejo-factura', { email: model.value?.email, password: model.value?.pass })
         // Paso 1: Ordenar el array por fecha de forma descendente
         data[0].sort((a: any, b: any) => b.created_at - a.created_at);
@@ -80,6 +83,7 @@ const postLogiun: any = async () => {
         CompanieName.value =  data.user.name
         store.companie_name =  data.user.name
         dataLogin.value = data
+        isLoading.value = false;
         router.push({ name: 'Home' })
     } catch (error) {
         console.log({ error })
@@ -91,13 +95,13 @@ const postLogiun: any = async () => {
 
 </script>
 <template>
-    <section class="flex items-center justify-center min-h-screen ">
-        <div class="flex max-w-3xl p-5 shadow-lg rounded-2xl">
-            <div class="px-5 md:w-1/2">
+    <section class="flex items-center justify-center min-h-screen  ">
+        <div class="flex flex-col  p-5 shadow-lg rounded-2xl ">
+            <div class="flex justify-center">
+                <img :src="logo" class="self-center rounded-2xl w-3/12 h-6/12" alt="page img">
+            </div>
+            <div class="px-5 ">
                 <h2 class="text-2xl font-bold text-[#002D74] text-center">CONSULTAR FACTURAS</h2>
-                <h2
-                    class="block w-full px-4 py-3 mt-6 font-semibold text-center text-white rounded-lg bg-cyan-500 hover:bg-blue-400 focus:bg-blue-400">
-                    ENTRADA AL SISTEMA</h2>
                 <form class="mt-6">
                     <div>
                         <label class="block text-gray-700">Correo Electronico</label>
@@ -112,13 +116,16 @@ const postLogiun: any = async () => {
                             required>
                     </div>
                     <button @click.prevent="postLogiun" type="submit"
-                        class="block w-full px-4 py-3 mt-6 font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-400 focus:bg-blue-400">
-                        Entrar
+                        class=" w-full px-4 py-3 mt-6 font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-400 focus:bg-blue-400 flex gab-5 justify-between">
+                        <p>
+                            Entrar 
+                        </p>
+                        <svg v-if="isLoading"  class="animate-spin  mr-3 h-full w-5 text-white ml-5 self-center" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>        
                     </button>
                 </form>
-            </div>
-            <div class="w-1/2 md:block lg:flex ">
-                <img :src="logo" class="self-center rounded-2xl" alt="page img">
             </div>
         </div>
     </section>

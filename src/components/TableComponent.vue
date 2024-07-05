@@ -4,7 +4,7 @@ import { Ref, ref, onMounted, computed, watch } from "vue";
 import calendarIon from '../assets/calendar.svg'
 import FilePdfIon from '../assets/pdf-svgrepo-com.svg'
 import FileXmlIon from '../assets/xml-svgrepo-com.svg'
-import FileJsonIon from '../assets/json-file-svgrepo-com.svg'
+import FileJsonIon from '../assets/archivo-json.png'
 import LastPageIon from '../assets/last-page-svgrepo-com.svg'
 import FirstPageIon from '../assets/first-page-svgrepo-com.svg'
 //import FileZipIon from '../assets/zip-svgrepo-com.svg'
@@ -602,9 +602,8 @@ onMounted(async () => {
     <section class="container px-4 mx-auto">
         <!-- cabecera -->
         <div class="flex flex-col md:flex-row items-center w-full gap-2 mt-1 ">
-            <div class="w-full md:w-1/5">
-                <select @change="getDataLogin(firstPageLogin)" id="seleccionar"
-                    :class="{ 'block w-full p-2 border border-gray-500 rounded-xl bg-green-700 text-white': varSelectedStatusDocument == 'ACEPTADA', 'block w-full p-2 border border-gray-500 rounded-xl bg-red-700 text-white ': varSelectedStatusDocument == 'POR ENVIAR' }"
+            <div class="w-fit">
+                <select @change="getDataLogin(firstPageLogin)" id="seleccionar" :class="{ 'block p-2 w-full border border-gray-500 rounded-xl bg-green-700 text-white': varSelectedStatusDocument == 'ACEPTADA', 'block  p-2 border border-gray-500 rounded-xl bg-red-700 text-white w-full ': varSelectedStatusDocument == 'POR ENVIAR' }"
                     v-model="varSelectedStatusDocument">
                     <option value="ACEPTADA" class="text-white bg-green-700">ACEPTADA</option>
                     <option value="POR ENVIAR" class="text-white bg-red-700" selected>POR ENVIAR</option>
@@ -638,7 +637,10 @@ onMounted(async () => {
                     v-model="varBuscadorNormal"
                     class="block w-full py-1.5 pr-5 pl-10 text-gray-700 bg-white border border-gray-500 rounded-lg placeholder-gray-400/70 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40">
             </div>
-            <div v-if="isLoading" class="spinner"><img src="@/assets/loading.gif" alt="Cargando..."></div>
+            <svg v-if="isLoading"  class="animate-spin  mr-3 h-full w-8 text-red-300 ml-5 self-center" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>  
         </div>
 
         <!-- body -->
@@ -661,28 +663,25 @@ onMounted(async () => {
                                     </span>
                                 </button>
                             </div>
-
-                           
-                                <div class="relative flex items-center w-full md:w-2/12 mt-1 md:mt-0" v-if="selectedDocuments.length > 0">
-                                    <button @click="downloadSelectedDocuemnts"
-                                        class="relative overflow-hidden text-xs rounded-lg shadow w-full md:w-22 bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group h-10">
-                                        <span class="relative flex gap-1 px-2 text-white font-bold">
-                                            <img :src="FilePdfIon" class="w-6 h-6 self-center" />
-                                            <p font-bold class="self-center group-hover:text-white">Descargar Seleccionados</p>
-                                        </span>
-                                    </button>
-                                </div>
-
-                                <div class="relative flex items-center w-full md:w-2/12 mt-1 md:mt-0" v-if="varSelectedStatusDocument == 'ACEPTADA'">
-                                    <button @click="generateCsv" v-if="DataDocument?.length"
-                                        class="relative w-full md:w-30 h-10 overflow-hidden text-xs rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
-                                        <span class="relative flex gap-1 px-2 text-white group-hover:text-white">
-                                            <img :src="CSVFile" class="w-4 h-4" />
-                                            <p class="self-center font-bold">Exportar</p>
-                                        </span>
-                                    </button>
-                                </div>
                             
+                            <div class="relative flex items-center w-full md:w-2/12 mt-1 md:mt-0" v-if="selectedDocuments.length > 0">
+                                <button @click="downloadSelectedDocuemnts"
+                                    class="relative overflow-hidden text-xs rounded-lg shadow w-fit md:w-22 bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group h-10">
+                                    <span class="relative flex gap-1 px-2 text-white font-bold">
+                                        <img :src="FilePdfIon" class="w-6 h-6 self-center" />
+                                        <p font-bold class="self-center group-hover:text-white">Descargar Seleccionados</p>
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="relative flex items-center w-full md:w-2/12 mt-1 md:mt-0" v-if="varSelectedStatusDocument == 'ACEPTADA'">
+                                <button @click="generateCsv" v-if="DataDocument?.length"
+                                    class="relative w-fit md:w-30 h-10 overflow-hidden text-xs rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
+                                    <span class="relative flex gap-1 px-2 text-white group-hover:text-white">
+                                        <img :src="CSVFile" class="w-4 h-4" />
+                                        <p class="self-center font-bold">Exportar</p>
+                                    </span>
+                                </button>
+                            </div>
 
                             <div class="flex w-full md:w-auto min-w-[200px] max-w-[26rem] justify-between border border-solid rounded-lg border-[#979494]" v-if="varSelectedStatusDocument == 'POR ENVIAR'">
                                 <input id="file-upload" type="file" class="hidden" @change="handleFileChange"
@@ -715,7 +714,7 @@ onMounted(async () => {
                                     </span>
                                 </button>
                             </div>
-                        </div>
+                        </div>  
 
                         <table class="min-w-full divide-y divide-gray-200 ">
                             <thead class="bg-blue-700 text-[13px]">
@@ -821,21 +820,21 @@ onMounted(async () => {
                                         </div>
                                     </td>
                                     <td class="px-2 py-2 text-center whitespace-nowrap">
-                                        <div class="flex flex-wrap gap-1 justify-center">
+                                        <div class="flex flex-wrap gap-5 justify-center">
 
                                             <a :href="`${apiUrl}/api/download/${document.company_identification_number}/${document.pdf}`" target="__blank">
-                                                <img :src="FilePdfIon" class="w-6 h-6 sm:w-8 sm:h-9" />
+                                                <img :src="FilePdfIon" class="w-8 h-8 self-center" />
                                             </a>
                                             <a :href="`${apiUrl}/api/download/${document.company_identification_number}/${document.xml}`" target="__blank">
-                                                <img :src="FileXmlIon" class="w-6 h-6 sm:w-8 sm:h-9" />
+                                                <img :src="FileXmlIon" class="w-8 h-8 self-center" />
                                             </a>
                                             <button @click="downloadJsonFile(document)">
-                                                <img :src="FileJsonIon" class="w-6 h-6 sm:w-8 sm:h-9" />
+                                                <img :src="FileJsonIon" class="w-8 h-8 self-center -mt-2" />
                                             </button>
 
                                             <div class="px-1 py-2 text-center whitespace-nowrap">
                                                 <button @click.prevent="openModalSendEmail(document)"
-                                                    class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow w-16 sm:w-22 group">
+                                                    class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow w-fit sm:w-22 group">
                                                     <div class="absolute inset-0 w-3 bg-orange-400 transition-all duration-[250ms] ease-out group-hover:w-full">
                                                     </div>
                                                     <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
@@ -846,7 +845,7 @@ onMounted(async () => {
                                             </div>
 
                                             <div v-if="document.state_document_id == 1"
-                                                :class="{ 'flex justify-center gap-1 px-2 py-1 font-normal rounded-full text-black bg-emerald-100/60 w-fit': document.state_document_id == 1, 'flex gap-1 px-2 py-1 font-normal rounded-full text-black bg-red-100/60 w-fit': document.state_document_id == 0 }">
+                                                :class="{ 'flex justify-center gap-1 px-2 py-1 font-normal rounded-full text-black bg-emerald-100/60 w-fit self-center  ': document.state_document_id == 1, 'flex gap-1 px-2 py-1 font-normal rounded-full text-black bg-red-100/60 w-fit self-center ': document.state_document_id == 0 }">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 20 20" fill="#02B126">
                                                     <path d="M9.16667 2.5L16.6667 10C17.0911 10.4745 17.0911 11.1922 16.6667 11.6667L11.6667 16.6667C11.1922 17.0911 10.4745 17.0911 10 16.6667L2.5 9.16667V5.83333C2.5 3.99238 3.99238 2.5 5.83333 2.5H9.16667" stroke="#52525B" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></path>
                                                     <circle cx="7.50004" cy="7.49967" r="1.66667" stroke="#52525B" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"></circle>
@@ -859,7 +858,7 @@ onMounted(async () => {
                                             <div v-else class="px-1 py-2 text-center whitespace-nowrap">
                                                 <div class="relative">
                                                     <button @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)"
-                                                        class="relative w-16 sm:w-22 h-6 overflow-hidden text-xs bg-white rounded-lg shadow group">
+                                                        class="relative w-fit sm:w-22 h-6 overflow-hidden text-xs bg-white rounded-lg shadow group">
                                                         <div class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />
                                                         <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
                                                             <img :src="SendInvoiceIon" class="w-4 h-4" />

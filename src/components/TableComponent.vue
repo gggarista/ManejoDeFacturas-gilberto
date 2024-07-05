@@ -823,18 +823,17 @@ onMounted(async () => {
                                         <div class="flex flex-wrap gap-2 justify-center">
 
                                             <a :href="`${apiUrl}/api/download/${document.company_identification_number}/${document.pdf}`" target="__blank">
-                                                <img :src="FilePdfIon" class="w-8 h-8 self-center -mt-1" />
+                                                <img :src="FilePdfIon" class="w-8 h-8 self-center -mt-1 " />
                                             </a>
                                             <a :href="`${apiUrl}/api/download/${document.company_identification_number}/${document.xml}`" target="__blank">
-                                                <img :src="FileXmlIon" class="w-8 h-8 self-center -mt-1" />
+                                                <img :src="FileXmlIon" class="w-8 h-8 self-center -mt-1 " />
                                             </a>
                                             <button @click="downloadJsonFile(document)">
                                                 <img :src="FileJsonIon" class="w-8 h-8 self-center -mt-2" />
                                             </button>
 
                                             <div class="px-1 py-2 text-center whitespace-nowrap">
-                                                <button @click.prevent="openModalSendEmail(document)"
-                                                    class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow w-fit sm:w-22 group -mt-5 ">
+                                                <button @click.prevent="openModalSendEmail(document)" class="relative h-6 overflow-hidden text-xs bg-white rounded-lg shadow w-fit sm:w-22 group -mt-5 ">
                                                     <div class="absolute inset-0 w-3 bg-orange-400 transition-all duration-[250ms] ease-out group-hover:w-full">
                                                     </div>
                                                     <span class="relative flex gap-1 px-2 text-black group-hover:text-white">
@@ -855,7 +854,7 @@ onMounted(async () => {
                                                 </p>
                                             </div>
 
-                                            <div v-else class="px-1 py-2 text-center whitespace-nowrap">
+                                            <div v-else class="px-1 py-2 text-center whitespace-nowrap -mt-2">
                                                 <div class="relative">
                                                     <button @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)"
                                                         class="relative w-fit sm:w-22 h-6 overflow-hidden text-xs bg-white rounded-lg shadow group">

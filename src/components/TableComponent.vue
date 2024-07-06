@@ -659,8 +659,7 @@ onMounted(async () => {
                                     class="relative w-full md:w-30 h-6 overflow-hidden text-xs rounded-lg bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
                                     <span class="relative flex gap-1 px-2 text-black">
                                         <img :src="SendInvoiceIon" class="w-4 h-4 self-center" />
-                                        <p class="self-center font-bold text-white group-hover:text-white">{{
-                        statusSelectedDocuments ? 'Enviando...' : 'Enviar Seleccionados' }}</p>
+                                        <p class="self-center font-bold text-white group-hover:text-white">{{ statusSelectedDocuments ? 'Enviando...' : 'Enviar Seleccionados' }}</p>
                                     </span>
                                 </button>
                             </div>
@@ -747,8 +746,15 @@ onMounted(async () => {
                                     </th>
                                     <th scope="col" class="px-2 py-1 text-left whitespace-nowrap text-white">
                                         <div class="flex gap-1 justify-left">
-                                            <img :src="calendarIon" class="self-left w-6 h-6" />
-                                            Fecha Emision
+                                            <img :src="calendarIon" class="self-left w-6 h-6 self-center " />
+                                            <div class="flex flex-col -gap-2 " >
+                                                <p class="-mb-2">
+                                                    Fecha Emision  
+                                                </p>
+                                                <p class="text-end" >
+                                                    Envio
+                                                </p>
+                                            </div>
                                             <button @click="sortData('date_issue')">
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                                     stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
@@ -815,10 +821,13 @@ onMounted(async () => {
                                         </div>
                                     </td>
                                     <td class="  whitespace-nowrap max-w-sm text-center ">
-                                        <div class="flex gap-1 justify-left">
+                                        <div class="flex  w-fit gap-1 justify-left">
                                             <div
-                                                class="self-left px-1 py-1 font-bold text-blue-900 bg-blue-100 rounded">
-                                                {{ document.date_issue }}
+                                                class="self-left px-1 py-1 font-bold text-blue-950 bg-blue-100 rounded">
+                                                {{ JSON.parse(document.request_api).date ?? '' }}
+                                                <p class=" text-yellow-700  ">
+                                                    {{  document.date_issue  }}
+                                                </p>
                                             </div>
                                         </div>
                                     </td>

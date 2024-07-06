@@ -537,7 +537,7 @@ const SendInvoice: any = async (data: any, type: any, document: any) => {
             document.isSend = false
         }
 
-        getDataLogin(firstPageLogin)
+        getDataLogin(firstPageLogin.value)
     } catch (error) {
         console.log(error)
     }
@@ -586,13 +586,6 @@ onMounted(async () => {
     var decryptedText = await bytes;
     firstPageLogin.value = decryptedText
     getDataLogin(firstPageLogin.value)
-
-    if (!document.querySelectorAll('.checkbox:checked').length) {
-        var checkAll: any = document.getElementById('selectAllCheckbox');
-        checkAll.checked = false;
-
-    }
-
 
 })
 </script>

@@ -114,20 +114,22 @@ const SelectAllItems = () => {
 
 const sendSelectedDocuments = () => {
     // Mostrar los IDs de los documentos seleccionados
-    if (confirm("¿Estás seguro de que deseas ejecutar esta acción?")) {
-        statusSelectedDocuments.value = true;
-        selectedDocuments.value.map((document: any) => {
-            //console.log(JSON.parse(document.request_api), document.type_document_id, document);
-            SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)
-        });
-        statusSelectedDocuments.value = false;
-        selectedDocuments.value = [];
-        checkboxSelectedDocuments.value.forEach((checkbox: any) => {
-            checkbox.checked = false;
-        });
-    } else {
-        console.log("Acción cancelada");
-    }
+   
+        if (confirm("¿Estás seguro de que deseas ejecutar esta acción?")) {
+            statusSelectedDocuments.value = true;
+            selectedDocuments.value.map((document: any) => {
+                //console.log(JSON.parse(document.request_api), document.type_document_id, document);
+                SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)
+            });
+            statusSelectedDocuments.value = false;
+            selectedDocuments.value = [];
+            checkboxSelectedDocuments.value.forEach((checkbox: any) => {
+                checkbox.checked = false;
+            });
+        } else {
+            console.log("Acción cancelada");
+        }
+   
 };
 
 const downloadSelectedDocuemnts = async () => {
@@ -501,7 +503,7 @@ const openModalSendEmail: any = (data: any) => {
     openmodal.value = true
 }
 const SendInvoice: any = async (data: any, type: any, document: any) => {
-    try {
+     try {
         document.isSend = true;
         if (type == 1 || type == 12) {
             let dataSend = await axios.post('/api/ubl2.1/invoice', data)
@@ -538,8 +540,10 @@ const SendInvoice: any = async (data: any, type: any, document: any) => {
         }
 
         getDataLogin(firstPageLogin.value)
-    } catch (error) {
-        console.log(error)
+     } catch (error) {
+        toast.error('Error del servidor', { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_RIGHT });
+        statusSelectedDocuments.value = false;
+        document.isSend = false;
     }
 }
 

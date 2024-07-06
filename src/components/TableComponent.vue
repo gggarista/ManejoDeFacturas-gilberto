@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, ref, onMounted, computed, watch, watchEffect } from "vue";
+import { Ref, ref, onMounted, computed, watch } from "vue";
 //import VueTailwindDatepicker from 'vue-tailwind-datepicker'
 import calendarIon from '../assets/calendar.svg'
 import FilePdfIon from '../assets/pdf-svgrepo-com.svg'
@@ -545,7 +545,7 @@ const SendInvoice: any = async (data: any, type: any, document: any) => {
 
 const notify: any = (message: any) => {
 
-    toast(message, { autoClose: false, dangerouslyHTMLString: true }); // ToastOptions
+    toast.info(message, { autoClose: false, dangerouslyHTMLString: true }); // ToastOptions
 }
 
 const openModalChangeDate: any = () => {

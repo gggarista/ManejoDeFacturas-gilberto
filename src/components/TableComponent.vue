@@ -216,12 +216,12 @@ const uploadBulkFile = () => {
                     if (data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.isValid == true) {
                         cantSuccess++;
                         htmlResponse = "Enviada Exitosamente\n";
-                        ListFactura += "Factura: " +  invoiceData.prefix + invoiceData.number + " " + htmlResponse + "<br>\n";
+                        ListFactura += "<div style='color:green'>Factura: " +  invoiceData.prefix + invoiceData.number + " " + htmlResponse + "</div>\n" ;
                         toast.success(htmlResponse +" "+  invoiceData.prefix + invoiceData.number, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_RIGHT, onClose: () => location.reload() }); // ToastOptions
                     } else {
                         cantFail++;
                         htmlResponse = " Error de envio\n";
-                        ListFactura += "Factura: " +  invoiceData.prefix + invoiceData.number + " " +htmlResponse + "<br>\n";
+                        ListFactura += " <div style='color:red'>  Factura: " +  invoiceData.prefix + invoiceData.number + " " +htmlResponse + "</div>\n";
                         toast.error(htmlResponse + " " +  invoiceData.prefix + invoiceData.number, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.BOTTOM_RIGHT, onClose: () => location.reload() }); // ToastOptions
                     }
                     

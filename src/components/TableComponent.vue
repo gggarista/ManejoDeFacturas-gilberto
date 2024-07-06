@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, ref, onMounted, computed, watch } from "vue";
+import { Ref, ref, onMounted, computed, watch, watchEffect } from "vue";
 //import VueTailwindDatepicker from 'vue-tailwind-datepicker'
 import calendarIon from '../assets/calendar.svg'
 import FilePdfIon from '../assets/pdf-svgrepo-com.svg'
@@ -67,6 +67,7 @@ const checkboxSelectedDocuments: any = ref([]);
 const fileBulkInput: any = ref([]);
 const statuFileBulkInput: Ref<boolean> = ref(false);
 const statuSendFileBulk: Ref<boolean> = ref(false);
+const selectAllCheckbox: Ref<boolean> = ref(false);
 
 const nameFile: Ref<any> = ref('')
 const totalSelectedDocuments = computed(() => {
@@ -78,25 +79,39 @@ const sortField: Ref<any> = ref('date_issue');
 const sortOrder: Ref<any> = ref('desc');
 const isLoading = ref(false);
 
-const toggleSelectedDocuments = (document: any) => {
+const toggleSelectedDocuments = (documentI: any) => {
     // Añadir o eliminar documentos de la selección
-    const index = selectedDocuments.value.findIndex((d: any) => d.id === document.id);
+    const index = selectedDocuments.value.findIndex((d: any) => d.id === documentI.id);
     if (index === -1) {
-        selectedDocuments.value.push(document);
+        selectedDocuments.value.push(documentI);
     } else {
         selectedDocuments.value.splice(index, 1);
+        const selectAllCheckbox: any = document.querySelector('#selectAllCheckbox');
+        const allUnchecked = checkboxSelectedDocuments.value.some((checkbox: any) => !checkbox.checked);
+        if (allUnchecked) {
+            selectAllCheckbox.checked = false
+        }
     }
 };
 
-// Seleccionar o deseleccionar todos los elementos listados dinámicamente
-// const SelectAllItems = () => {
-//     const checkboxes = document.querySelectorAll('.checkbox');
-//     const selectAllCheckbox: any = document.querySelector('#selectAllCheckbox');
 
-//     checkboxes.forEach((checkbox: any) => {
-//         checkbox.checked = selectAllCheckbox.checked;
-//     });
-// }
+
+// Seleccionar o deseleccionar todos los elementos listados dinámicamente
+const SelectAllItems = () => {
+    selectedDocuments.value = [];
+    const checkboxes = document.querySelectorAll('.checkbox');
+    const selectAllCheckbox: any = document.querySelector('#selectAllCheckbox');
+
+    checkboxes.forEach((checkbox: any) => {
+        checkbox.checked = selectAllCheckbox.checked;
+    });
+
+    filterDocumentDate.value.map((document: any) => {
+        if(selectAllCheckbox.checked){
+            toggleSelectedDocuments(document);
+        }
+    });
+};
 
 const sendSelectedDocuments = () => {
     // Mostrar los IDs de los documentos seleccionados
@@ -181,16 +196,16 @@ const uploadBulkFile = () => {
 
             if (jsonData['factura_masiva']) {
 
-                const promises = jsonData['factura_masiva'].map( async (invoiceData: any) => {
+                const promises = jsonData['factura_masiva'].map(async (invoiceData: any) => {
                     // Configura los headers
                     const headers = {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
                         'Authorization': 'Bearer ' + invoiceData.template_token
                     };
-                        let htmlHeader = 'Enviando Factura ' +  invoiceData.prefix + invoiceData.number;
-                        // Esto se ejecutará cuando todas las solicitudes Axios se completen
-                        toast.info(htmlHeader , { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_RIGHT, onClose: () => location.reload() }); // ToastOptions
+                    let htmlHeader = 'Enviando Factura ' + invoiceData.prefix + invoiceData.number;
+                    // Esto se ejecutará cuando todas las solicitudes Axios se completen
+                    toast.info(htmlHeader, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_RIGHT, onClose: () => location.reload() }); // ToastOptions
                     // Realiza la solicitud POST con Axios
                     // return axios.post(`${apiUrl}/api/ubl2.1/invoice`, JSON.stringify(invoiceData), {
                     //     headers: headers,
@@ -215,15 +230,15 @@ const uploadBulkFile = () => {
 
                     if (data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.isValid == true) {
                         cantSuccess++;
-                        ListFactura += "<b style='color:green'>Factura: " +  invoiceData.prefix + invoiceData.number + " " + "Enviada Exitosamente </b>\n\n" ;
-                        toast.success("Enviada Exitosamente" +" "+  invoiceData.prefix + invoiceData.number, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_RIGHT, onClose: () => location.reload() }); // ToastOptions
+                        ListFactura += "<b style='color:green'>Factura: " + invoiceData.prefix + invoiceData.number + " " + "Enviada Exitosamente </b>\n\n";
+                        toast.success("Enviada Exitosamente" + " " + invoiceData.prefix + invoiceData.number, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_RIGHT, onClose: () => location.reload() }); // ToastOptions
                     } else {
                         cantFail++;
-                        ListFactura += " <b style='color:red'>  Factura: " +  invoiceData.prefix + invoiceData.number + " Error de envio </b>\n\n";
-                        toast.error(" Error de envio" + " " +  invoiceData.prefix + invoiceData.number, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.BOTTOM_RIGHT, onClose: () => location.reload() }); // ToastOptions
+                        ListFactura += " <b style='color:red'>  Factura: " + invoiceData.prefix + invoiceData.number + " Error de envio </b>\n\n";
+                        toast.error(" Error de envio" + " " + invoiceData.prefix + invoiceData.number, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.BOTTOM_RIGHT, onClose: () => location.reload() }); // ToastOptions
                     }
-                    
-                    
+
+
                 });
 
                 Promise.all(promises)
@@ -572,7 +587,12 @@ onMounted(async () => {
     var decryptedText = await bytes;
     firstPageLogin.value = decryptedText
     getDataLogin(firstPageLogin.value)
-    console.log({ apiUrl });
+
+    if (!document.querySelectorAll('.checkbox:checked').length) {
+        var checkAll: any = document.getElementById('selectAllCheckbox');
+        checkAll.checked = false;
+
+    }
 
 
 })
@@ -693,7 +713,8 @@ onMounted(async () => {
                                     class="relative w-full md:w-30 h-6 overflow-hidden text-xs rounded-lg shadow bg-[#2471A3] hover:bg-[#85C1E9] hover:text-white group">
                                     <span class="relative flex gap-1 px-2 text-white group-hover:text-white">
                                         <img :src="SendInvoiceIon" class="w-4 h-4 self-center" />
-                                        <p class="self-center font-bold">{{ statuSendFileBulk ? 'Enviando Facturas ...' :
+                                        <p class="self-center font-bold">{{ statuSendFileBulk ? 'Enviando Facturas ...'
+                        :
                         'Enviar archivo importado' }}</p>
                                     </span>
                                 </button>
@@ -715,11 +736,11 @@ onMounted(async () => {
                             <thead class="bg-blue-700 text-[13px]">
                                 <tr>
                                     <th>
-                                        <!-- <div class="ml-2">
+                                        <div class="ml-2">
                                             <div
                                                 class="relative flex items-left justify-center flex-shrink-0 w-3 h-3 bg-gray-200 rounded-lg">
                                                 <input type="checkbox" class="checkbox" @change="SelectAllItems()"
-                                                    id="selectAllCheckbox">
+                                                    id="selectAllCheckbox" ref="selectAllCheckbox">
                                                 <div class="hidden text-white bg-indigo-700 rounded-sm check-icon">
                                                     <svg class="icon icon-tabler icon-tabler-check"
                                                         xmlns="http://www.w3.org/2000/svg" width="20" height="20"
@@ -730,7 +751,7 @@ onMounted(async () => {
                                                     </svg>
                                                 </div>
                                             </div>
-                                        </div> -->
+                                        </div>
                                     </th>
                                     <th scope="col" class="px-2 py-1 text-left whitespace-nowrap text-white">
                                         <div class="flex gap-1 justify-left">
@@ -895,7 +916,8 @@ onMounted(async () => {
                                                         <span
                                                             class="relative flex gap-1 px-2 text-black group-hover:text-white">
                                                             <img :src="SendInvoiceIon" class="w-4 h-4" />
-                                                            <p class="self-center font-bold hidden sm:block">{{ document.isSend == true ? 'Enviando...' : 'Enviar' }}
+                                                            <p class="self-center font-bold hidden sm:block">{{
+                        document.isSend == true ? 'Enviando...' : 'Enviar' }}
                                                             </p>
                                                         </span>
                                                     </button>

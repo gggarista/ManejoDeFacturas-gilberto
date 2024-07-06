@@ -171,6 +171,7 @@ const uploadBulkFile = () => {
     const file = fileBulkInput.value.files[0];
     const reader = new FileReader();
     let htmlResponse = '';
+    let ListFactura = '';
     let cantSuccess = 0;
     let cantFail = 0;
     reader.onload = (event: any) => {
@@ -189,7 +190,7 @@ const uploadBulkFile = () => {
                     };
                         let htmlHeader = 'Enviando Factura ' +  invoiceData.prefix + invoiceData.number;
                         // Esto se ejecutará cuando todas las solicitudes Axios se completen
-                        toast(htmlHeader , { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_CENTER, onClose: () => location.reload() }); // ToastOptions
+                        toast(htmlHeader , { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_RIGHT, onClose: () => location.reload() }); // ToastOptions
                     // Realiza la solicitud POST con Axios
                     // return axios.post(`${apiUrl}/api/ubl2.1/invoice`, JSON.stringify(invoiceData), {
                     //     headers: headers,
@@ -214,12 +215,14 @@ const uploadBulkFile = () => {
 
                     if (data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.isValid == true) {
                         cantSuccess++;
-                        htmlResponse += " Enviada Exitosamente\n";
-                        toast(htmlResponse +" "+  invoiceData.prefix + invoiceData.number, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_RIGHT, onClose: () => location.reload() }); // ToastOptions
+                        htmlResponse = "Enviada Exitosamente\n";
+                        ListFactura += "Factura: " +  invoiceData.prefix + invoiceData.number + " " + htmlResponse + "<br>\n";
+                        toast.success(htmlResponse +" "+  invoiceData.prefix + invoiceData.number, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_RIGHT, onClose: () => location.reload() }); // ToastOptions
                     } else {
                         cantFail++;
-                        htmlResponse = " fallo\n";
-                        toast(htmlResponse + " " +  invoiceData.prefix + invoiceData.number, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_RIGHT, onClose: () => location.reload() }); // ToastOptions
+                        htmlResponse = " Error de envio\n";
+                        ListFactura += "Factura: " +  invoiceData.prefix + invoiceData.number + " " +htmlResponse + "<br>\n";
+                        toast.error(htmlResponse + " " +  invoiceData.prefix + invoiceData.number, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.BOTTOM_RIGHT, onClose: () => location.reload() }); // ToastOptions
                     }
                     
                     
@@ -230,7 +233,7 @@ const uploadBulkFile = () => {
                         let htmlHeader = '<b>\nFacturas exitosas ' + cantSuccess + '</b>\n';
                         htmlHeader += '<b>Facturas error ' + cantFail + '</b>\n\n';
                         // Esto se ejecutará cuando todas las solicitudes Axios se completen
-                        toast(htmlHeader + htmlResponse, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_RIGHT, onClose: () => location.reload() }); // ToastOptions
+                        toast(htmlHeader + htmlResponse + ListFactura, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_LEFT, onClose: () => location.reload() }); // ToastOptions
 
                     })
                     .catch(error => {

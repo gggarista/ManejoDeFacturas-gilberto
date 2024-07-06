@@ -215,12 +215,12 @@ const uploadBulkFile = () => {
 
                     if (data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.isValid == true) {
                         cantSuccess++;
-                        ListFactura += "<div style='color:green'>Factura: " +  invoiceData.prefix + invoiceData.number + " " + "Enviada Exitosamente </div><br>" ;
-                        toast.success(htmlResponse +" "+  invoiceData.prefix + invoiceData.number, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_RIGHT, onClose: () => location.reload() }); // ToastOptions
+                        ListFactura += "<b style='color:green'>Factura: " +  invoiceData.prefix + invoiceData.number + " " + "Enviada Exitosamente </b>\n\n" ;
+                        toast.success("Enviada Exitosamente" +" "+  invoiceData.prefix + invoiceData.number, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_RIGHT, onClose: () => location.reload() }); // ToastOptions
                     } else {
                         cantFail++;
-                        ListFactura += " <div style='color:red'>  Factura: " +  invoiceData.prefix + invoiceData.number + " Error de envio </div><br>";
-                        toast.error(htmlResponse + " " +  invoiceData.prefix + invoiceData.number, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.BOTTOM_RIGHT, onClose: () => location.reload() }); // ToastOptions
+                        ListFactura += " <b style='color:red'>  Factura: " +  invoiceData.prefix + invoiceData.number + " Error de envio </b>\n\n";
+                        toast.error(" Error de envio" + " " +  invoiceData.prefix + invoiceData.number, { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.BOTTOM_RIGHT, onClose: () => location.reload() }); // ToastOptions
                     }
                     
                     

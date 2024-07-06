@@ -95,7 +95,6 @@ const toggleSelectedDocuments = (documentI: any) => {
 };
 
 
-
 // Seleccionar o deseleccionar todos los elementos listados dinámicamente
 const SelectAllItems = () => {
     selectedDocuments.value = [];

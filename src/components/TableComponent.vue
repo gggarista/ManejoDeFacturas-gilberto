@@ -190,7 +190,7 @@ const uploadBulkFile = () => {
                     };
                         let htmlHeader = 'Enviando Factura ' +  invoiceData.prefix + invoiceData.number;
                         // Esto se ejecutará cuando todas las solicitudes Axios se completen
-                        toast(htmlHeader , { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_RIGHT, onClose: () => location.reload() }); // ToastOptions
+                        toast.info(htmlHeader , { autoClose: false, dangerouslyHTMLString: true, position: toast.POSITION.TOP_RIGHT, onClose: () => location.reload() }); // ToastOptions
                     // Realiza la solicitud POST con Axios
                     // return axios.post(`${apiUrl}/api/ubl2.1/invoice`, JSON.stringify(invoiceData), {
                     //     headers: headers,

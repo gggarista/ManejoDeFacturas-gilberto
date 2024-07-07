@@ -296,12 +296,53 @@ const generateCsv: any = async () => {
 
     var exportData: any[] = [];
     if (data[0] && data[0].length > 0) {
-        var headers = ['Prefijo', 'Numero', 'Cufe', 'Fecha', 'Hora', 'Fecha Aceptacion', 'Resolucion'];
+        var headers = ['Prefijo', 'Numero', 'Cufe', 'Fecha', 'Hora', 'Fecha Aceptacion', 'Resolucion', 'Nit', 'DV', 'Codigo', 'Direccion', 'Telefono','Municipio', 'Nombre','Metodo de Pago', 'Fecha de Vencimiento', 'Duracion','Nombre Producto', 'Codigo Producto', 'Precio Producto', 'Subtotal', 'Iva', 'Porcentaje'];
         const fileName = data[0][0].company_identification_number + '_' + dateValue.value.startDate + '_' + dateValue.value.endDate + '.csv';
         data[0].forEach((element: any) => {
             const request = JSON.parse(element.request_api);
-            exportData.push([element.prefix, element.number, element.cufe, request.date, request.time, element.date_issue, request.resolution_number]);
+           
+            if(request.invoice_lines){
+
+                request.invoice_lines.forEach((line: any) =>{
+
+                    const taxes = line.tax_totals;
+                    var taxAmount = 0;
+                    var taxableAmount = 0;
+                    var taxPercentage = 0;
+                    if(taxes){
+                        taxAmount = taxes[0].tax_amount;
+                        taxableAmount = taxes[0].taxable_amount;
+                        taxPercentage = taxes[0].percent;
+                    }
+
+                    exportData.push([element.prefix, 
+                                    element.number, 
+                                    element.cufe, 
+                                    request.date, 
+                                    request.time, 
+                                    element.date_issue, 
+                                    request.resolution_number, 
+                                    request.customer.identification_number, 
+                                    request.customer.dv, 
+                                    request.customer.customer.code, 
+                                    request.customer.address, 
+                                    request.customer.phone, 
+                                    request.customer.municipality_name, 
+                                    request.customer.name, 
+                                    request.payment_form.payment_method_name, 
+                                    request.payment_form.payment_due_date, 
+                                    request.payment_form.duration_measure,
+                                    line.description,
+                                    line.code,
+                                    line.price_amount,
+                                    taxableAmount,
+                                    taxAmount,
+                                    taxPercentage
+                                    ]);
+                });
+            }
         });
+
         exportToCsv(fileName, headers, exportData);
     }
 

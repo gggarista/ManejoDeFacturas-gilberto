@@ -310,9 +310,9 @@ const generateCsv: any = async () => {
                     var taxableAmount = 0;
                     var taxPercentage = 0;
                     if(taxes){
-                        taxAmount = taxes[0].tax_amount;
-                        taxableAmount = taxes[0].taxable_amount;
-                        taxPercentage = taxes[0].percent;
+                        taxAmount = taxes[0]?.tax_amount;
+                        taxableAmount = taxes[0]?.taxable_amount;
+                        taxPercentage = taxes[0]?.percent;
                     }
 
                     exportData.push([element.prefix, 
@@ -324,7 +324,7 @@ const generateCsv: any = async () => {
                                     request.resolution_number, 
                                     request.customer.identification_number, 
                                     request.customer.dv, 
-                                    request.customer.customer.code, 
+                                    request.customer?.customer.code, 
                                     request.customer.address, 
                                     request.customer.phone, 
                                     request.customer.municipality_name, 

@@ -324,7 +324,7 @@ const generateCsv: any = async () => {
                                     request?.resolution_number, 
                                     request.customer?.identification_number, 
                                     request.customer?.dv, 
-                                    request.customer?.customer.code, 
+                                    request.customer?.customer?.code, 
                                     request.customer?.address, 
                                     request.customer?.phone, 
                                     request.customer?.municipality_name, 

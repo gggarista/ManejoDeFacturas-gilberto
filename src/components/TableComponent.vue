@@ -299,7 +299,11 @@ const generateCsv: any = async () => {
         var headers = ['Prefijo', 'Numero', 'Cufe', 'Fecha', 'Hora', 'Fecha Aceptacion', 'Resolucion', 'Nit', 'DV', 'Codigo', 'Direccion', 'Telefono','Municipio', 'Nombre','Metodo de Pago', 'Fecha de Vencimiento', 'Duracion','Nombre Producto', 'Codigo Producto', 'Precio Producto', 'Subtotal', 'Iva', 'Porcentaje'];
         const fileName = data[0][0].company_identification_number + '_' + dateValue.value.startDate + '_' + dateValue.value.endDate + '.csv';
         data[0].forEach((element: any) => {
-            const request = JSON.parse(element.request_api);
+
+            let request: any = {};
+            if (element.request_api) {
+                request = JSON.parse(element.request_api);
+            }
            
             if(request.invoice_lines){
 
@@ -350,7 +354,11 @@ const generateCsv: any = async () => {
 
 const downloadJsonFile = (doc: any) => {
 
-    const formattedJson = JSON.stringify(JSON.parse(doc.request_api), null, 2);
+    let requestApi: any = {};
+    if (doc.request_api) {
+        requestApi = JSON.parse(doc.request_api);
+    }
+    const formattedJson = JSON.stringify(JSON.parse(requestApi), null, 2);
     const blob: Blob = new Blob([formattedJson], { type: 'application/json' });
     const url: string = URL.createObjectURL(blob);
     const linkElement: HTMLAnchorElement = document.createElement('a');

@@ -385,6 +385,19 @@ const sortData = (field: any) => {
     }
     getDataLogin(firstPageLogin.value);
 }
+
+// En tu <script setup>
+const parseRequestApi = (requestApi: any) => {
+  if (!requestApi || typeof requestApi !== 'string') {
+    return {}; // Devuelve un objeto vacío si no hay datos
+  }
+  try {
+    return JSON.parse(requestApi);
+  } catch (error) {
+    console.error("Error parsing request_api:", error);
+    return {};
+  }
+};
 //---------- variables computed---------------------
 
 /**
@@ -888,7 +901,7 @@ onMounted(async () => {
                                         <div class="flex  w-fit gap-1 justify-left">
                                             <div
                                                 class="self-left px-1 py-1 font-bold text-blue-950 bg-blue-100 rounded">
-                                                {{ JSON.parse(document.request_api).date ?? '' }}
+                                                {{ parseRequestApi(document.request_api).date || 'N/A' }}
                                                 <p class=" text-yellow-700  ">
                                                     {{  document.date_issue  }}
                                                 </p>
@@ -974,7 +987,8 @@ onMounted(async () => {
                                             <div v-else class="px-1 py-2 text-center whitespace-nowrap -mt-2">
                                                 <div class="relative">
                                                     <button
-                                                        @click.prevent="SendInvoice(JSON.parse(document.request_api), document.type_document_id, document)"
+                                                        @click.prevent="document.request_api ? SendInvoice(parseRequestApi(document.request_api), document.type_document_id, document) : notify('No hay datos para enviar')"
+                                                        :disabled="!document.request_api"
                                                         class="relative w-fit sm:w-22 h-6 overflow-hidden text-xs bg-white rounded-lg shadow group">
                                                         <div
                                                             class="absolute inset-0 w-3 bg-green-400 transition-all duration-[250ms] ease-out group-hover:w-full" />

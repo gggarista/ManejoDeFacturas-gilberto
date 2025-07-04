@@ -353,21 +353,27 @@ const generateCsv: any = async () => {
 }
 
 const downloadJsonFile = (doc: any) => {
-
-    let requestApi: any = {};
-    if (doc.request_api) {
-        requestApi = JSON.parse(doc.request_api);
+    if (!doc.request_api) {
+        console.error("No request_api data available");
+        return;
     }
-    const formattedJson = JSON.stringify(JSON.parse(requestApi), null, 2);
-    const blob: Blob = new Blob([formattedJson], { type: 'application/json' });
-    const url: string = URL.createObjectURL(blob);
-    const linkElement: HTMLAnchorElement = document.createElement('a');
-    linkElement.href = url;
-    linkElement.download = doc.prefix + '' + doc.number + '.txt';
-    document.body.appendChild(linkElement);
-    linkElement.click();
-    document.body.removeChild(linkElement);
-    URL.revokeObjectURL(url);
+
+    try {
+        let requestApi = JSON.parse(doc.request_api);
+        const formattedJson = JSON.stringify(requestApi, null, 2);
+        const blob: Blob = new Blob([formattedJson], { type: 'application/json' });
+        const url: string = URL.createObjectURL(blob);
+        const linkElement: HTMLAnchorElement = document.createElement('a');
+        linkElement.href = url;
+        linkElement.download = doc.prefix + '' + doc.number + '.txt';
+        document.body.appendChild(linkElement);
+        linkElement.click();
+        document.body.removeChild(linkElement);
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error("Error parsing JSON:", error);
+        notify("Error al procesar el documento JSON");
+    }
 }
 
 const sortData = (field: any) => {
@@ -554,6 +560,11 @@ const openModalSendEmail: any = (data: any) => {
 const SendInvoice: any = async (data: any, type: any, document: any) => {
      try {
         document.isSend = true;
+
+        if (!data) {
+            throw new Error("No data provided for sending invoice");
+        }
+
         if (type == 1 || type == 12) {
             let dataSend = await axios.post('/api/ubl2.1/invoice', data)
             notify(`<p style="font-size: 9px" >${dataSend.data.message}</p><br/><p style="font-size: 9px" >${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.ErrorMessage.string : ''}</p><br/><p style="font-size: 9px" >  ${dataSend.data.ResponseDian ? dataSend.data.ResponseDian.Envelope.Body.SendBillSyncResponse.SendBillSyncResult.StatusMessage : ''}</p>`)
